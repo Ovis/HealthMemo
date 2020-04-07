@@ -35,10 +35,11 @@ namespace PostDietProgress.Domain
 
             try
             {
-                await _settingContainer.CreateItemAsync(setting);
+                await _settingContainer.UpsertItemAsync(setting);
             }
             catch (Exception e)
             {
+                //TODO 
                 Console.Write(e.Message);
                 return false;
             }

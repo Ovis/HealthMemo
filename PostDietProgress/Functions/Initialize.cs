@@ -1,3 +1,4 @@
+ï»¿using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,69 +15,115 @@ namespace PostDietProgress.Functions
     {
         private readonly CosmosDbConfiguration _settings;
         private readonly InitializeCosmosDbLogic _initializeCosmosDbLogic;
+        private readonly HealthPlanetLogic _healthPlanetLogic;
+
+
 
         /// <summary>
-        /// ƒRƒ“ƒXƒgƒ‰ƒNƒ^
+        /// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
         /// </summary>
         /// <param name="options"></param>
         /// <param name="initializeCosmosDbLogic"></param>
+        /// <param name="healthPlanetLogic"></param>
         public Initialize(
             IOptions<CosmosDbConfiguration> options,
-            InitializeCosmosDbLogic initializeCosmosDbLogic
+            InitializeCosmosDbLogic initializeCosmosDbLogic,
+            HealthPlanetLogic healthPlanetLogic
             )
         {
             _settings = options.Value;
             _initializeCosmosDbLogic = initializeCosmosDbLogic;
+            _healthPlanetLogic = healthPlanetLogic;
         }
 
         /// <summary>
-        /// ‰Šúˆ—
+        /// åˆæœŸå‡¦ç†
         /// </summary>
         /// <param name="req"></param>
         /// <param name="log"></param>
         /// <returns></returns>
         [FunctionName("Initialize")]
-        public async Task<IActionResult> Run(
+        public async Task<IActionResult> InitializeProc(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("‰Šúˆ—‚ğŠJn");
+            log.LogInformation("åˆæœŸå‡¦ç†ã‚’é–‹å§‹");
 
-            //ƒf[ƒ^ƒx[ƒXì¬
+            //ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ä½œæˆ
             {
                 var databaseCreateResult = await _initializeCosmosDbLogic.CreateCosmosDbDatabaseIfNotExistsAsync();
 
                 log.LogInformation(databaseCreateResult
-                    ? $"CosmosDB‚Ìƒf[ƒ^ƒx[ƒX‚ğì¬‚µ‚Ü‚µ‚½B ƒf[ƒ^ƒx[ƒX–¼:`{_settings.DatabaseId}`"
-                    : $"ƒf[ƒ^ƒx[ƒX–¼: `{_settings.DatabaseId}` ‚Í‚·‚Å‚É‘¶İ‚µ‚Ü‚·B");
+                    ? $"CosmosDBã®ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã‚’ä½œæˆã—ã¾ã—ãŸã€‚ ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹å:`{_settings.DatabaseId}`"
+                    : $"ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹å: `{_settings.DatabaseId}` ã¯ã™ã§ã«å­˜åœ¨ã—ã¾ã™ã€‚");
             }
 
 
-            //İ’èî•ñŠi”[ƒRƒ“ƒeƒiì¬
+            //è¨­å®šæƒ…å ±æ ¼ç´ã‚³ãƒ³ãƒ†ãƒŠä½œæˆ
             {
 
                 var settingContainerCreateResult =
                     await _initializeCosmosDbLogic.CreateSettingCosmosDbContainerIfNotExistsAsync();
 
                 log.LogInformation(settingContainerCreateResult
-                    ? $"CosmosDB‚ÌƒRƒ“ƒeƒi‚ğì¬‚µ‚Ü‚µ‚½B ƒRƒ“ƒeƒi–¼:`{_settings.SettingContainerId}`"
-                    : $"ƒf[ƒ^ƒx[ƒX–¼: `{_settings.SettingContainerId}` ‚Í‚·‚Å‚É‘¶İ‚µ‚Ü‚·B");
+                    ? $"CosmosDBã®ã‚³ãƒ³ãƒ†ãƒŠã‚’ä½œæˆã—ã¾ã—ãŸã€‚ ã‚³ãƒ³ãƒ†ãƒŠå:`{_settings.SettingContainerId}`"
+                    : $"ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹å: `{_settings.SettingContainerId}` ã¯ã™ã§ã«å­˜åœ¨ã—ã¾ã™ã€‚");
             }
 
-            //g‘Ìî•ñŠi”[ƒRƒ“ƒeƒiì¬
+            //èº«ä½“æƒ…å ±æ ¼ç´ã‚³ãƒ³ãƒ†ãƒŠä½œæˆ
             {
                 var bodyConditionContainerCreateResult =
                     await _initializeCosmosDbLogic.CreateBodyConditionCosmosDbContainerIfNotExistsAsync();
 
                 log.LogInformation(bodyConditionContainerCreateResult
-                    ? $"CosmosDB‚ÌƒRƒ“ƒeƒi‚ğì¬‚µ‚Ü‚µ‚½B ƒRƒ“ƒeƒi–¼:`{_settings.DietDataContainerId}`"
-                    : $"ƒf[ƒ^ƒx[ƒX–¼: `{_settings.DietDataContainerId}` ‚Í‚·‚Å‚É‘¶İ‚µ‚Ü‚·B");
+                    ? $"CosmosDBã®ã‚³ãƒ³ãƒ†ãƒŠã‚’ä½œæˆã—ã¾ã—ãŸã€‚ ã‚³ãƒ³ãƒ†ãƒŠå:`{_settings.DietDataContainerId}`"
+                    : $"ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹å: `{_settings.DietDataContainerId}` ã¯ã™ã§ã«å­˜åœ¨ã—ã¾ã™ã€‚");
             }
 
-            log.LogInformation("‰Šúˆ—‚ªŠ®—¹‚µ‚Ü‚µ‚½B");
+            //TANITA HealthPlanetå‡¦ç†ã®ãŸã‚ãƒªãƒ€ã‚¤ãƒ¬ã‚¯ãƒˆ
+            var authUrl = new StringBuilder();
+            authUrl.Append("https://www.healthplanet.jp/oauth/auth?");
+            authUrl.Append("client_id=" + "978.DufHhrFpBl.apps.healthplanet.jp");
+            authUrl.Append("&redirect_uri=http://localhost.local.net:7071/api/InitializeTanita");
+            authUrl.Append("&scope=innerscan");
+            authUrl.Append("&response_type=code");
+
+            return new RedirectResult(authUrl.ToString());
+
+
+            log.LogInformation("åˆæœŸå‡¦ç†ãŒå®Œäº†ã—ã¾ã—ãŸã€‚");
 
             return new OkObjectResult("");
         }
+
+        /// <summary>
+        /// åˆæœŸå‡¦ç†
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("InitializeTanita")]
+        public async Task<IActionResult> InitializeTanita(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+
+            var code = req.Query["code"];
+
+            if (string.IsNullOrEmpty(code))
+            {
+                return new BadRequestResult();
+            }
+
+            var result = await _healthPlanetLogic.GetHealthPlanetToken(code);
+
+
+            log.LogInformation("åˆæœŸå‡¦ç†ãŒå®Œäº†ã—ã¾ã—ãŸã€‚");
+
+            return new OkObjectResult(result);
+        }
+
+
 
     }
 }

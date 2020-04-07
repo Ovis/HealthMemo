@@ -31,6 +31,7 @@ namespace PostDietProgress.Application
 
 
             builder.Services.AddScoped<InitializeCosmosDbLogic>();
+            builder.Services.AddScoped<HealthPlanetLogic>();
 
             builder.Services.AddHttpClient();
 

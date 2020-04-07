@@ -23,6 +23,13 @@ namespace PostDietProgress.Application
                     configuration.GetSection("CosmosDbOptions").Bind(settings);
                 });
 
+            builder.Services.AddOptions<HealthPlanetConfiguration>()
+                .Configure<IConfiguration>((settings, configuration) =>
+                {
+                    configuration.GetSection("HealthPlanetOptions").Bind(settings);
+                });
+
+
             builder.Services.AddScoped<InitializeCosmosDbLogic>();
 
             builder.Services.AddHttpClient();

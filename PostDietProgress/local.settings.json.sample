@@ -11,6 +11,8 @@
     "CosmosDbOptions:PartitionKey": "/partitionKey",
     "CosmosDbOptions:SettingContainerId": "Setting",
     "CosmosDbOptions:DietDataContainerId": "DietData",
-    "CosmosDbOptions:DietDataTimeToLive": 31536000
+    "CosmosDbOptions:DietDataTimeToLive": 31536000,
+    "HealthPlanetOptions:TanitaClientId": "",
+    "HealthPlanetOptions:TanitaClientSecretToken": ""
   }
 }

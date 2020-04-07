@@ -22,6 +22,8 @@ namespace PostDietProgress.Application
 
             builder.Services.AddScoped<InitializeCosmosDbLogic>();
 
+            builder.Services.AddHttpClient();
+
             builder.Services.AddSingleton((provider) =>
             {
                 var configuration = provider.GetRequiredService<IConfiguration>();

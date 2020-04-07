@@ -1,3 +1,4 @@
+﻿using System.Text;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Fluent;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -32,6 +33,7 @@ namespace PostDietProgress.Application
 
             builder.Services.AddScoped<InitializeCosmosDbLogic>();
             builder.Services.AddScoped<HealthPlanetLogic>();
+            builder.Services.AddScoped<CosmosDbLogic>();
 
             builder.Services.AddHttpClient();
 

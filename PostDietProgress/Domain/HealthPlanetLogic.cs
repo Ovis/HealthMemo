@@ -46,7 +46,9 @@ namespace PostDietProgress.Domain
 
             var tokenData = JsonSerializer.Deserialize<HealthPlanetToken>(jsonString);
 
-            return true;
+            var result = await _cosmosDbLogic.SetHealthPlanetToken(tokenData);
+
+            return result;
         }
     }
 }

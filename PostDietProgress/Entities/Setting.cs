@@ -2,8 +2,9 @@
 
 namespace PostDietProgress.Entities
 {
-    public class SettingModel
+    public class Setting
     {
+        public string Id { get; set; }
         public long PreviousWeight { get; set; }
 
         public long PreviousWeekWeight { get; set; }
@@ -13,6 +14,8 @@ namespace PostDietProgress.Entities
         public string RequestToken { get; set; }
 
         public DateTime ExpiresIn { get; set; }
+
+        public string RefreshToken { get; set; }
 
         public bool ErrorFlag { get; set; }
 

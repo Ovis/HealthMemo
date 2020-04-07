@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Fluent;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +14,9 @@ namespace PostDietProgress.Application
 
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            //Shift-JISを用いるためのまじない
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             builder.Services.AddOptions<CosmosDbConfiguration>()
                 .Configure<IConfiguration>((settings, configuration) =>
                 {

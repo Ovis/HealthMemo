@@ -20,14 +20,18 @@ namespace PostDietProgress.Domain
 
             _cosmosDatabase = _cosmosDbClient.GetDatabase(_cosmosDbConfiguration.DatabaseId);
 
-            _settingContainer = _cosmosDbClient.GetContainer(_cosmosDbConfiguration.DatabaseId, _cosmosDbConfiguration.SettingContainerId);
+            _settingContainer = _cosmosDatabase.GetContainer(_cosmosDbConfiguration.SettingContainerId);
         }
 
+        /// <summary>
+        /// HealthPlanetトークンDB登録処理
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<bool> SetHealthPlanetToken(HealthPlanetToken token)
         {
             var setting = new Setting()
             {
-                Id = "setting",
                 RequestToken = token.AccessToken,
                 RefreshToken = token.RefreshToken,
                 ExpiresIn = DateTime.Now.AddDays(30)

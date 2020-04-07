@@ -2,10 +2,6 @@
 {
     public class CosmosDbConfiguration
     {
-        public string AccountEndpoint { get; set; }
-
-        public string AccountKey { get; set; }
-
         public string DatabaseId { get; set; } = "AzureFunctionsDbId";
 
         public string DatabaseThroughput { get; set; } = "200";

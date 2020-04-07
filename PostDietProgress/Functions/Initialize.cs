@@ -89,11 +89,6 @@ namespace PostDietProgress.Functions
             authUrl.Append("&response_type=code");
 
             return new RedirectResult(authUrl.ToString());
-
-
-            log.LogInformation("初期処理が完了しました。");
-
-            return new OkObjectResult("");
         }
 
         /// <summary>

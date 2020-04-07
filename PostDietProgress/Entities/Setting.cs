@@ -4,7 +4,7 @@ namespace PostDietProgress.Entities
 {
     public class Setting
     {
-        public string Id { get; set; }
+        public string Id { get; set; } = "Setting";
         public long PreviousWeight { get; set; }
 
         public long PreviousWeekWeight { get; set; }
@@ -22,5 +22,7 @@ namespace PostDietProgress.Entities
         public DateTime PreviousErrorDateTime { get; set; }
 
         public int DietDataTimeToLive { get; set; }
+
+        public string PartitionKey { get; set; } = "Setting";
     }
 }

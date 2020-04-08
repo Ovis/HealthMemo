@@ -27,7 +27,7 @@ namespace PostDietProgress.Entities.HealthPlanetEntity
         /* 内臓脂肪レベル(小数点無し、手入力含む) */
         public string VisceralFatLevel { get; set; }
 
-        /* 基礎代謝量(kcal) */
+        /* 基礎代謝量(kCal) */
         public string BasalMetabolism { get; set; }
 
         /* 体内年齢(歳) */

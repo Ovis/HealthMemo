@@ -117,7 +117,7 @@ namespace PostDietProgress.Functions
 
             log.LogInformation("初期処理が完了しました。");
 
-            return new OkObjectResult(result);
+            return new OkObjectResult("");
         }
 
 

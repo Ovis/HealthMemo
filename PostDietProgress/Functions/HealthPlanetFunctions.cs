@@ -17,6 +17,7 @@ namespace PostDietProgress.Functions
         /// <summary>
         /// コンストラクタ
         /// </summary>
+        /// <param name="cosmosDbLogic"></param>
         /// <param name="healthPlanetLogic"></param>
         public HealthPlanetFunctions(
             CosmosDbLogic cosmosDbLogic,

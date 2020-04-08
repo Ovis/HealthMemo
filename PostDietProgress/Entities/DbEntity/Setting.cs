@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PostDietProgress.Entities
+namespace PostDietProgress.Entities.DbEntity
 {
     public class Setting
     {
@@ -11,7 +11,7 @@ namespace PostDietProgress.Entities
 
         public DateTime PreviousMeasurementDate { get; set; }
 
-        public string RequestToken { get; set; }
+        public string AccessToken { get; set; }
 
         public DateTime ExpiresIn { get; set; }
 

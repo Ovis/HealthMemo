@@ -8,11 +8,13 @@
     "CosmosDbOptions:DatabaseId": "PostDietProgress",
     "CosmosDbOptions:DatabaseThroughput": "400",
     "CosmosDbOptions:ContainerThroughput": "400",
-    "CosmosDbOptions:PartitionKey": "/partitionKey",
+    "CosmosDbOptions:SettingPartitionKey": "/partitionKey",
     "CosmosDbOptions:SettingContainerId": "Setting",
-    "CosmosDbOptions:DietDataContainerId": "DietData",
-    "CosmosDbOptions:DietDataTimeToLive": 31536000,
+    "CosmosDbOptions:HealthDataContainerId": "HealthData",
+    "CosmosDbOptions:HealthDataTimeToLive": 31536000,
+    "CosmosDbOptions:HealthDataContainerPartitionKey": "/type",
     "HealthPlanetOptions:TanitaClientId": "",
-    "HealthPlanetOptions:TanitaClientSecretToken": ""
+    "HealthPlanetOptions:TanitaClientSecretToken": "",
+    "HealthPlanetOptions:CallbackInitializeTanitaUrl": "http://localhost/api/InitializeTanita"
   }
 }

@@ -13,7 +13,8 @@ namespace PostDietProgress.Functions
 {
     public class InitializeFunctions
     {
-        private readonly CosmosDbConfiguration _settings;
+        private readonly CosmosDbConfiguration _cosmosDbConfiguration;
+        private readonly HealthPlanetConfiguration _healthPlanetConfiguration;
         private readonly InitializeCosmosDbLogic _initializeCosmosDbLogic;
         private readonly HealthPlanetLogic _healthPlanetLogic;
 
@@ -26,12 +27,14 @@ namespace PostDietProgress.Functions
         /// <param name="initializeCosmosDbLogic"></param>
         /// <param name="healthPlanetLogic"></param>
         public InitializeFunctions(
-            IOptions<CosmosDbConfiguration> options,
+            IOptions<CosmosDbConfiguration> cosmosDbConfiguration,
+            IOptions<HealthPlanetConfiguration> healthPlanetConfiguration,
             InitializeCosmosDbLogic initializeCosmosDbLogic,
             HealthPlanetLogic healthPlanetLogic
             )
         {
-            _settings = options.Value;
+            _cosmosDbConfiguration = cosmosDbConfiguration.Value;
+            _healthPlanetConfiguration = healthPlanetConfiguration.Value;
             _initializeCosmosDbLogic = initializeCosmosDbLogic;
             _healthPlanetLogic = healthPlanetLogic;
         }
@@ -54,8 +57,8 @@ namespace PostDietProgress.Functions
                 var databaseCreateResult = await _initializeCosmosDbLogic.CreateCosmosDbDatabaseIfNotExistsAsync();
 
                 log.LogInformation(databaseCreateResult
-                    ? $"CosmosDBのデータベースを作成しました。 データベース名:`{_settings.DatabaseId}`"
-                    : $"データベース名: `{_settings.DatabaseId}` はすでに存在します。");
+                    ? $"CosmosDBのデータベースを作成しました。 データベース名:`{_cosmosDbConfiguration.DatabaseId}`"
+                    : $"データベース名: `{_cosmosDbConfiguration.DatabaseId}` はすでに存在します。");
             }
 
 
@@ -66,8 +69,8 @@ namespace PostDietProgress.Functions
                     await _initializeCosmosDbLogic.CreateSettingCosmosDbContainerIfNotExistsAsync();
 
                 log.LogInformation(settingContainerCreateResult
-                    ? $"CosmosDBのコンテナを作成しました。 コンテナ名:`{_settings.SettingContainerId}`"
-                    : $"データベース名: `{_settings.SettingContainerId}` はすでに存在します。");
+                    ? $"CosmosDBのコンテナを作成しました。 コンテナ名:`{_cosmosDbConfiguration.SettingContainerId}`"
+                    : $"データベース名: `{_cosmosDbConfiguration.SettingContainerId}` はすでに存在します。");
             }
 
             //身体情報格納コンテナ作成
@@ -76,15 +79,15 @@ namespace PostDietProgress.Functions
                     await _initializeCosmosDbLogic.CreateBodyConditionCosmosDbContainerIfNotExistsAsync();
 
                 log.LogInformation(bodyConditionContainerCreateResult
-                    ? $"CosmosDBのコンテナを作成しました。 コンテナ名:`{_settings.DietDataContainerId}`"
-                    : $"データベース名: `{_settings.DietDataContainerId}` はすでに存在します。");
+                    ? $"CosmosDBのコンテナを作成しました。 コンテナ名:`{_cosmosDbConfiguration.HealthDataContainerId}`"
+                    : $"データベース名: `{_cosmosDbConfiguration.HealthDataContainerId}` はすでに存在します。");
             }
 
             //TANITA HealthPlanet処理のためリダイレクト
             var authUrl = new StringBuilder();
             authUrl.Append("https://www.healthplanet.jp/oauth/auth?");
-            authUrl.Append("client_id=" + "978.DufHhrFpBl.apps.healthplanet.jp");
-            authUrl.Append("&redirect_uri=http://localhost.local.net:7071/api/InitializeTanita");
+            authUrl.Append($"client_id={_healthPlanetConfiguration.TanitaClientId}");
+            authUrl.Append($"&redirect_uri={_healthPlanetConfiguration.CallbackInitializeTanitaUrl}");
             authUrl.Append("&scope=innerscan");
             authUrl.Append("&response_type=code");
 

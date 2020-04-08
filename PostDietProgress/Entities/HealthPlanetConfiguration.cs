@@ -5,5 +5,7 @@
         public string TanitaClientId { get; set; }
 
         public string TanitaClientSecretToken { get; set; }
+
+        public string CallbackInitializeTanitaUrl { get; set; }
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace PostDietProgress.Entities
+﻿namespace PostDietProgress.Entities.HealthPlanetEntity
 {
-    public enum HealthPlanetHealthTagEnum
+    public enum HealthTagEnum
     {
         WEIGHT = 6021, /* 体重 (kg) */
         BODYFATPERF = 6022, /* 体脂肪率(%) */

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace PostDietProgress.Entities
+namespace PostDietProgress.Entities.HealthPlanetEntity
 {
-    public class HealthPlanetInnerScan
+    public class InnerScan
     {
         public class Health
         {

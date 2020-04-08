@@ -7,7 +7,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using PostDietProgress.Entities;
+using PostDietProgress.Entities.Configuration;
+using PostDietProgress.Entities.HealthPlanetEntity;
 using TimeZoneConverter;
 
 namespace PostDietProgress.Domain
@@ -52,7 +53,7 @@ namespace PostDietProgress.Domain
             using var reader = (new StreamReader(stream, Encoding.GetEncoding("shift-jis"), true)) as TextReader;
             var jsonString = await reader.ReadToEndAsync();
 
-            var tokenData = JsonSerializer.Deserialize<HealthPlanetToken>(jsonString);
+            var tokenData = JsonSerializer.Deserialize<Token>(jsonString);
 
             var result = await _cosmosDbLogic.SetHealthPlanetToken(tokenData);
 
@@ -63,7 +64,7 @@ namespace PostDietProgress.Domain
         /// HealthPlanetから身体情報を取得
         /// </summary>
         /// <returns></returns>
-        public async Task<HealthPlanetInnerScan> GetHealthDataAsync()
+        public async Task<InnerScan> GetHealthDataAsync(int period)
         {
             var token = await _cosmosDbLogic.GetSettingDataAsync();
 
@@ -74,7 +75,7 @@ namespace PostDietProgress.Domain
             {
                 {"access_token",token.AccessToken},
                 {"date","1"},
-                {"from",$"{localTime.AddDays(-30):yyyyMMdd}000000"},
+                {"from",$"{localTime.AddDays(-period):yyyyMMdd}000000"},
                 {"to",$"{localTime:yyyyMMdd}235959"},
                 {"tag","6021,6022,6023,6024,6025,6026,6027,6028,6029"}
             });
@@ -86,7 +87,7 @@ namespace PostDietProgress.Domain
 
             var healthDataJson = await reader.ReadToEndAsync();
 
-            var healthData = JsonSerializer.Deserialize<HealthPlanetInnerScan>(healthDataJson);
+            var healthData = JsonSerializer.Deserialize<InnerScan>(healthDataJson);
 
             return healthData;
         }
@@ -96,9 +97,9 @@ namespace PostDietProgress.Domain
         /// </summary>
         /// <param name="healthData"></param>
         /// <returns></returns>
-        public List<HealthPlanetHealthData> ShapeHealthData(HealthPlanetInnerScan healthData)
+        public List<HpHealthData> ShapeHealthData(InnerScan healthData)
         {
-            var healthPlanetDataList = new List<HealthPlanetHealthData>();
+            var healthPlanetDataList = new List<HpHealthData>();
 
             //取得データから日付を抜き出す
             var healthDateList = healthData.Data.Select(x => x.Date).Distinct().ToList();
@@ -110,7 +111,7 @@ namespace PostDietProgress.Domain
                     .Where(r => date.Equals(r.Date))
                     .ToDictionary(x => x.Tag, x => x.Keydata);
 
-                healthPlanetDataList.Add(new HealthPlanetHealthData(date, healthList));
+                healthPlanetDataList.Add(new HpHealthData(date, healthList));
             }
 
             return healthPlanetDataList;

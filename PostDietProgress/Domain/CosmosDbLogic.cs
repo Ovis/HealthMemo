@@ -4,8 +4,9 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
-using PostDietProgress.Entities;
+using PostDietProgress.Entities.Configuration;
 using PostDietProgress.Entities.DbEntity;
+using PostDietProgress.Entities.HealthPlanetEntity;
 
 namespace PostDietProgress.Domain
 {
@@ -36,7 +37,7 @@ namespace PostDietProgress.Domain
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<bool> SetHealthPlanetToken(HealthPlanetToken token)
+        public async Task<bool> SetHealthPlanetToken(Token token)
         {
             var setting = new Setting()
             {
@@ -70,8 +71,8 @@ namespace PostDietProgress.Domain
         /// <summary>
         /// HealthPlanetから取得した身体情報をDBに格納
         /// </summary>
-        /// <param name="record"></param>
-        public async Task SetHealthPlanetHealthDataAsync(List<HealthPlanetHealthData> healthList)
+        /// <param name="healthList"></param>
+        public async Task SetHealthPlanetHealthDataAsync(List<HpHealthData> healthList)
         {
             foreach (var health in healthList)
             {

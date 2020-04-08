@@ -1,4 +1,4 @@
-﻿namespace PostDietProgress.Entities
+﻿namespace PostDietProgress.Entities.Configuration
 {
     public class CosmosDbConfiguration
     {

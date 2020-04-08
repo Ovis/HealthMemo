@@ -4,7 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
-using PostDietProgress.Entities;
+using PostDietProgress.Entities.Configuration;
 
 namespace PostDietProgress.Domain
 {

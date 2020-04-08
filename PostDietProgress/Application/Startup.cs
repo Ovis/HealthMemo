@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PostDietProgress.Domain;
-using PostDietProgress.Entities;
+using PostDietProgress.Entities.Configuration;
 
 [assembly: FunctionsStartup(typeof(PostDietProgress.Application.Startup))]
 namespace PostDietProgress.Application

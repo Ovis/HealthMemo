@@ -7,7 +7,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PostDietProgress.Domain;
-using PostDietProgress.Entities;
+using PostDietProgress.Entities.Configuration;
 
 namespace PostDietProgress.Functions
 {

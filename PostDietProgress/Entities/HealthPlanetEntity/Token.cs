@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace PostDietProgress.Entities
+namespace PostDietProgress.Entities.HealthPlanetEntity
 {
-    public class HealthPlanetToken
+    public class Token
     {
         [JsonPropertyName("access_token")]
         public string AccessToken { get; set; }

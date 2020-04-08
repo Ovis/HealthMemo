@@ -48,11 +48,8 @@ namespace PostDietProgress.Functions
             //HealthPlanetからデータを取得
             var healthData = await _healthPlanetLogic.GetHealthDataAsync(period);
 
-            //取得データをもとに身体データをリスト化
-            var healthList = _healthPlanetLogic.ShapeHealthData(healthData);
-
             //身体データをDBに格納
-            await _cosmosDbLogic.SetHealthPlanetHealthDataAsync(healthList);
+            await _cosmosDbLogic.SetHealthPlanetHealthDataAsync(healthData.healthDataList);
 
             return new OkObjectResult("");
 

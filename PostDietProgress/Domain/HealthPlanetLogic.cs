@@ -64,7 +64,7 @@ namespace PostDietProgress.Domain
         /// HealthPlanetから身体情報を取得
         /// </summary>
         /// <returns></returns>
-        public async Task<InnerScan> GetHealthDataAsync(int period)
+        public async Task<(string height, List<HealthData> healthDataList)> GetHealthDataAsync(int period)
         {
             var token = await _cosmosDbLogic.GetSettingDataAsync();
 
@@ -89,7 +89,7 @@ namespace PostDietProgress.Domain
 
             var healthData = JsonSerializer.Deserialize<InnerScan>(healthDataJson);
 
-            return healthData;
+            return ShapeHealthData(healthData);
         }
 
         /// <summary>
@@ -97,9 +97,9 @@ namespace PostDietProgress.Domain
         /// </summary>
         /// <param name="healthData"></param>
         /// <returns></returns>
-        public List<HpHealthData> ShapeHealthData(InnerScan healthData)
+        private (string height, List<HealthData> healthDataList) ShapeHealthData(InnerScan healthData)
         {
-            var healthPlanetDataList = new List<HpHealthData>();
+            var healthPlanetDataList = new List<HealthData>();
 
             //取得データから日付を抜き出す
             var healthDateList = healthData.Data.Select(x => x.Date).Distinct().ToList();
@@ -111,10 +111,10 @@ namespace PostDietProgress.Domain
                     .Where(r => date.Equals(r.Date))
                     .ToDictionary(x => x.Tag, x => x.Keydata);
 
-                healthPlanetDataList.Add(new HpHealthData(date, healthList));
+                healthPlanetDataList.Add(new HealthData(date, healthList));
             }
 
-            return healthPlanetDataList;
+            return (healthData.Height, healthPlanetDataList);
         }
     }
 }

@@ -1,8 +1,11 @@
 ﻿namespace PostDietProgress.Entities.DbEntity
 {
-    public class HealthData
+    public class HealthRecord
     {
         public string Id { get; set; }
+
+        /* 身長 */
+        public string Height { get; set; }
 
         /* 体重 (kg) */
         public string Weight { get; set; }

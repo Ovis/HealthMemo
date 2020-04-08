@@ -73,11 +73,11 @@ namespace PostDietProgress.Domain
         /// HealthPlanetから取得した身体情報をDBに格納
         /// </summary>
         /// <param name="healthList"></param>
-        public async Task SetHealthPlanetHealthDataAsync(List<HpHealthData> healthList)
+        public async Task SetHealthPlanetHealthDataAsync((string height, List<HealthData> healthDataList) healthData)
         {
-            foreach (var health in healthList)
+            foreach (var health in healthData.healthDataList)
             {
-                var record = new HealthData
+                var record = new HealthRecord
                 {
                     Id = health.DateTime,
                     BasalMetabolism = health.BasalMetabolism,
@@ -88,6 +88,7 @@ namespace PostDietProgress.Domain
                     MuscleScore = health.MuscleScore,
                     VisceralFatLevel = health.VisceralFatLevel,
                     VisceralFatLevel2 = health.VisceralFatLevel2,
+                    Height = healthData.height,
                     Weight = health.Weight,
                     Type = "HealthData"
                 };
@@ -107,13 +108,13 @@ namespace PostDietProgress.Domain
         /// 最新の身体データを取得
         /// </summary>
         /// <returns></returns>
-        public async Task<HealthData> GetHealthPlanetPostDataAsync()
+        public async Task<HealthRecord> GetHealthPlanetPostDataAsync()
         {
-            var healthData = new HealthData();
+            var healthData = new HealthRecord();
 
             var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("Setting") };
 
-            var iterator = _settingContainer.GetItemQueryIterator<HealthData>("SELECT * FROM c WHERE c.type = 'HealthData' ORDER BY c.id desc OFFSET 0 LIMIT 1", requestOptions: queryRequestOptions);
+            var iterator = _settingContainer.GetItemQueryIterator<HealthRecord>("SELECT * FROM c WHERE c.type = 'HealthData' ORDER BY c.id desc OFFSET 0 LIMIT 1", requestOptions: queryRequestOptions);
 
             while (iterator.HasMoreResults)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
@@ -102,5 +103,26 @@ namespace PostDietProgress.Domain
             }
         }
 
+        /// <summary>
+        /// 最新の身体データを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<HealthData> GetHealthPlanetPostDataAsync()
+        {
+            var healthData = new HealthData();
+
+            var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("Setting") };
+
+            var iterator = _settingContainer.GetItemQueryIterator<HealthData>("SELECT * FROM c WHERE c.type = 'HealthData' ORDER BY c.id desc OFFSET 0 LIMIT 1", requestOptions: queryRequestOptions);
+
+            while (iterator.HasMoreResults)
+            {
+                var result = await iterator.ReadNextAsync();
+
+                healthData = result.First();
+            };
+
+            return healthData;
+        }
     }
 }

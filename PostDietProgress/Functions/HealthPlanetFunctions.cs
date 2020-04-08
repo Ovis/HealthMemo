@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System.Web.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -30,11 +31,22 @@ namespace PostDietProgress.Functions
 
         [FunctionName("GetHealthPlanet")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
+            var period = 30;
+            if (!(string.IsNullOrEmpty(req.Query["period"])) && !int.TryParse(req.Query["period"], out period))
+            {
+                return new BadRequestErrorMessageResult("期間指定の値が数値以外の値になっています。");
+            }
+
+            if (0 > period || period > 120)
+            {
+                return new BadRequestErrorMessageResult("期間指定の値は0から120までの値を指定してください。");
+            }
+
             //HealthPlanetからデータを取得
-            var healthData = await _healthPlanetLogic.GetHealthDataAsync();
+            var healthData = await _healthPlanetLogic.GetHealthDataAsync(period);
 
             //取得データをもとに身体データをリスト化
             var healthList = _healthPlanetLogic.ShapeHealthData(healthData);

@@ -64,7 +64,7 @@ namespace PostDietProgress.Domain
         /// HealthPlanetから身体情報を取得
         /// </summary>
         /// <returns></returns>
-        public async Task<InnerScan> GetHealthDataAsync()
+        public async Task<InnerScan> GetHealthDataAsync(int period)
         {
             var token = await _cosmosDbLogic.GetSettingDataAsync();
 
@@ -75,7 +75,7 @@ namespace PostDietProgress.Domain
             {
                 {"access_token",token.AccessToken},
                 {"date","1"},
-                {"from",$"{localTime.AddDays(-30):yyyyMMdd}000000"},
+                {"from",$"{localTime.AddDays(-period):yyyyMMdd}000000"},
                 {"to",$"{localTime:yyyyMMdd}235959"},
                 {"tag","6021,6022,6023,6024,6025,6026,6027,6028,6029"}
             });

@@ -53,33 +53,13 @@ namespace PostDietProgress.Domain
                 Automatic = true
             };
 
-            //IncludePathの指定
-            indexPolicy.IncludedPaths.Add(new IncludedPath
-            {
-                Path = $"/*"
-            });
-
-            ////ExcludePathの指定
-            indexPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/name/?" });
-
-            //UniqueKeyの指定
-            var uniqueKeys =
-                new Collection<UniqueKey>
-                {
-                    new UniqueKey
-                    {
-                        Paths = { "/personalId" }
-                    }
-                };
-
             int.TryParse(_settings.ContainerThroughput, out var throughput);
 
             return await CreateCosmosDbContainerIfNotExistsAsync(
                  _settings.SettingContainerId,
                  throughput: throughput,
                  partitionKeyPath: _settings.SettingPartitionKey,
-                 indexPolicy: indexPolicy,
-                 uniqueKeys: uniqueKeys);
+                 indexPolicy: indexPolicy);
         }
 
         /// <summary>
@@ -95,34 +75,15 @@ namespace PostDietProgress.Domain
                 Automatic = true
             };
 
-            //IncludePathの指定
-            indexPolicy.IncludedPaths.Add(new IncludedPath
-            {
-                Path = $"/*"
-            });
-
-            ////ExcludePathの指定
-            indexPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/name/?" });
-
-            //UniqueKeyの指定
-            var uniqueKeys =
-                new Collection<UniqueKey>
-                {
-                    new UniqueKey
-                    {
-                        Paths = { "/personalId" }
-                    }
-                };
 
             int.TryParse(_settings.ContainerThroughput, out var throughput);
 
             return await CreateCosmosDbContainerIfNotExistsAsync(
-                    _settings.DietDataContainerId,
+                    _settings.HealthDataContainerId,
                     throughput: throughput,
-                    partitionKeyPath: _settings.DietDataContainerPartitionKey,
+                    partitionKeyPath: _settings.HealthDataContainerPartitionKey,
                     indexPolicy: indexPolicy,
-                    uniqueKeys: uniqueKeys,
-                    defaultTimeToLive: _settings.DietDataTimeToLive);
+                    defaultTimeToLive: _settings.HealthDataTimeToLive);
         }
 
         /// <summary>

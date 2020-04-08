@@ -12,10 +12,10 @@
 
         public string SettingContainerId { get; set; } = "Setting";
 
-        public string DietDataContainerId { get; set; } = "DietData";
+        public string HealthDataContainerId { get; set; } = "HealthData";
 
-        public int DietDataTimeToLive { get; set; }
+        public int HealthDataTimeToLive { get; set; }
 
-        public string DietDataContainerPartitionKey { get; set; }
+        public string HealthDataContainerPartitionKey { get; set; }
     }
 }

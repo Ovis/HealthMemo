@@ -21,7 +21,7 @@ namespace PostDietProgress.Entities.DbEntity
 
         public DateTime PreviousErrorDateTime { get; set; }
 
-        public int DietDataTimeToLive { get; set; }
+        public int HealthDataTimeToLive { get; set; }
 
         public string PartitionKey { get; set; } = "Setting";
     }

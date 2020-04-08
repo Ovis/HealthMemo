@@ -39,6 +39,7 @@ namespace PostDietProgress.Functions
             //取得データをもとに身体データをリスト化
             var healthList = _healthPlanetLogic.ShapeHealthData(healthData);
 
+            //身体データをDBに格納
             await _cosmosDbLogic.SetHealthPlanetHealthDataAsync(healthList);
 
             return new OkObjectResult("");

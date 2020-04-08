@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
@@ -28,7 +28,7 @@ namespace PostDietProgress.Domain
             _cosmosDatabase = _cosmosDbClient.GetDatabase(_cosmosDbConfiguration.DatabaseId);
 
             _settingContainer = _cosmosDatabase.GetContainer(_cosmosDbConfiguration.SettingContainerId);
-            _healthContainer = _cosmosDatabase.GetContainer(_cosmosDbConfiguration.DietDataContainerId);
+            _healthContainer = _cosmosDatabase.GetContainer(_cosmosDbConfiguration.HealthDataContainerId);
         }
 
         /// <summary>
@@ -70,26 +70,36 @@ namespace PostDietProgress.Domain
         /// <summary>
         /// HealthPlanetから取得した身体情報をDBに格納
         /// </summary>
-        /// <param name="healthList"></param>
+        /// <param name="record"></param>
         public async Task SetHealthPlanetHealthDataAsync(List<HealthPlanetHealthData> healthList)
         {
-            foreach (var record in healthList.Select(health => new HealthData
+            foreach (var health in healthList)
             {
-                Id = health.DateTime,
-                BasalMetabolism = health.BasalMetabolism,
-                BodyAge = health.BodyAge,
-                BodyFatPerf = health.BodyFatPerf,
-                BoneQuantity = health.BoneQuantity,
-                MuscleMass = health.MuscleMass,
-                MuscleScore = health.MuscleScore,
-                VisceralFatLevel = health.VisceralFatLevel,
-                VisceralFatLevel2 = health.VisceralFatLevel2,
-                Weight = health.Weight,
-                Type = "HealthData"
-            }))
-            {
-                await _healthContainer.UpsertItemAsync(record);
+                var record = new HealthData
+                {
+                    Id = health.DateTime,
+                    BasalMetabolism = health.BasalMetabolism,
+                    BodyAge = health.BodyAge,
+                    BodyFatPerf = health.BodyFatPerf,
+                    BoneQuantity = health.BoneQuantity,
+                    MuscleMass = health.MuscleMass,
+                    MuscleScore = health.MuscleScore,
+                    VisceralFatLevel = health.VisceralFatLevel,
+                    VisceralFatLevel2 = health.VisceralFatLevel2,
+                    Weight = health.Weight,
+                    Type = "HealthData"
+                };
+
+                try
+                {
+                    await _healthContainer.UpsertItemAsync(record);
+                }
+                catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+                {
+                    Console.WriteLine("Item in database with id: {0} already exists\n", record.Id);
+                }
             }
         }
+
     }
 }

@@ -11,7 +11,7 @@ using PostDietProgress.Entities;
 
 namespace PostDietProgress.Functions
 {
-    public class Initialize
+    public class InitializeFunctions
     {
         private readonly CosmosDbConfiguration _settings;
         private readonly InitializeCosmosDbLogic _initializeCosmosDbLogic;
@@ -25,7 +25,7 @@ namespace PostDietProgress.Functions
         /// <param name="options"></param>
         /// <param name="initializeCosmosDbLogic"></param>
         /// <param name="healthPlanetLogic"></param>
-        public Initialize(
+        public InitializeFunctions(
             IOptions<CosmosDbConfiguration> options,
             InitializeCosmosDbLogic initializeCosmosDbLogic,
             HealthPlanetLogic healthPlanetLogic
@@ -102,7 +102,6 @@ namespace PostDietProgress.Functions
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-
             var code = req.Query["code"];
 
             if (string.IsNullOrEmpty(code))
@@ -110,7 +109,7 @@ namespace PostDietProgress.Functions
                 return new BadRequestResult();
             }
 
-            var result = await _healthPlanetLogic.GetHealthPlanetToken(code);
+            var result = await _healthPlanetLogic.GetHealthPlanetTokenAsync(code);
 
 
             log.LogInformation("初期処理が完了しました。");

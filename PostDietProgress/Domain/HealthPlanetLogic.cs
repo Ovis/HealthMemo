@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using PostDietProgress.Entities;
+using TimeZoneConverter;
 
 namespace PostDietProgress.Domain
 {
@@ -25,7 +28,12 @@ namespace PostDietProgress.Domain
             _cosmosDbLogic = cosmosDbLogic;
         }
 
-        public async Task<bool> GetHealthPlanetToken(string code)
+        /// <summary>
+        /// トークン取得処理
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        public async Task<bool> GetHealthPlanetTokenAsync(string code)
         {
             //TANITA HealthPlanet処理のためリダイレクト
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -49,6 +57,54 @@ namespace PostDietProgress.Domain
             var result = await _cosmosDbLogic.SetHealthPlanetToken(tokenData);
 
             return result;
+        }
+
+        public async Task<HealthPlanetInnerScan> GetHealthDataAsync()
+        {
+            var token = await _cosmosDbLogic.GetSettingDataAsync();
+
+            var jst = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
+            var localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jst);
+
+            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                {"access_token",token.AccessToken},
+                {"date","1"},
+                {"from",$"{localTime.AddDays(-140):yyyyMMdd}000000"},
+                {"to",$"{localTime:yyyyMMdd}235959"},
+                {"tag","6021,6022,6023,6024,6025,6026,6027,6028,6029"}
+            });
+
+            var res = await _httpClient.PostAsync("https://www.healthplanet.jp/status/innerscan.json", content);
+
+            await using var stream = (await res.Content.ReadAsStreamAsync());
+            using var reader = (new StreamReader(stream, Encoding.UTF8, true)) as TextReader;
+
+            var healthDataJson = await reader.ReadToEndAsync();
+
+            var healthData = JsonSerializer.Deserialize<HealthPlanetInnerScan>(healthDataJson);
+
+            return healthData;
+        }
+
+        public List<HealthPlanetHealthData> ShapeHealthData(HealthPlanetInnerScan healthData)
+        {
+            var healthPlanetDataList = new List<HealthPlanetHealthData>();
+
+            //取得データから日付を抜き出す
+            var healthDateList = healthData.Data.Select(x => x.Date).Distinct().ToList();
+
+            //取得データをリスト変換
+            foreach (var date in healthDateList)
+            {
+                var healthList = healthData.Data
+                    .Where(r => date.Equals(r.Date))
+                    .ToDictionary(x => x.Tag, x => x.Keydata);
+
+                healthPlanetDataList.Add(new HealthPlanetHealthData(date, healthList));
+            }
+
+            return healthPlanetDataList;
         }
     }
 }

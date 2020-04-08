@@ -75,17 +75,15 @@ namespace PostDietProgress.Domain
             int.TryParse(_settings.ContainerThroughput, out var throughput);
 
             return await CreateCosmosDbContainerIfNotExistsAsync(
-                 _cosmosDbClient,
-                 _settings.DatabaseId,
                  _settings.SettingContainerId,
                  throughput: throughput,
-                 partitionKeyPath: _settings.PartitionKey,
+                 partitionKeyPath: _settings.SettingPartitionKey,
                  indexPolicy: indexPolicy,
                  uniqueKeys: uniqueKeys);
         }
 
         /// <summary>
-        /// 身体譲歩格納コンテナ作成
+        /// 身体情報格納コンテナ作成
         /// </summary>
         /// <returns></returns>
         public async Task<bool> CreateBodyConditionCosmosDbContainerIfNotExistsAsync()
@@ -119,11 +117,9 @@ namespace PostDietProgress.Domain
             int.TryParse(_settings.ContainerThroughput, out var throughput);
 
             return await CreateCosmosDbContainerIfNotExistsAsync(
-                    _cosmosDbClient,
-                    _settings.DatabaseId,
                     _settings.DietDataContainerId,
                     throughput: throughput,
-                    partitionKeyPath: _settings.PartitionKey,
+                    partitionKeyPath: _settings.DietDataContainerPartitionKey,
                     indexPolicy: indexPolicy,
                     uniqueKeys: uniqueKeys,
                     defaultTimeToLive: _settings.DietDataTimeToLive);
@@ -132,8 +128,6 @@ namespace PostDietProgress.Domain
         /// <summary>
         /// CosmosDBのコンテナを作成(既にある場合は何もしない)
         /// </summary>
-        /// <param name="cosmosDbClient"></param>
-        /// <param name="databaseId"></param>
         /// <param name="containerId"></param>
         /// <param name="throughput"></param>
         /// <param name="partitionKeyPath"></param>
@@ -141,8 +135,7 @@ namespace PostDietProgress.Domain
         /// <param name="uniqueKeys"></param>
         /// <param name="defaultTimeToLive"></param>
         /// <returns></returns>
-        private async Task<bool> CreateCosmosDbContainerIfNotExistsAsync(CosmosClient cosmosDbClient,
-            string databaseId,
+        private async Task<bool> CreateCosmosDbContainerIfNotExistsAsync(
             string containerId,
             int throughput = 400,
             string partitionKeyPath = "",
@@ -170,7 +163,7 @@ namespace PostDietProgress.Domain
             }
 
             //コンテナの作成
-            var result = await cosmosDbClient.GetDatabase(databaseId).CreateContainerIfNotExistsAsync(properties, throughput);
+            var result = await _cosmosDatabase.CreateContainerIfNotExistsAsync(properties, throughput);
 
             return result.StatusCode == HttpStatusCode.Created;
         }

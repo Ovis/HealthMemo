@@ -49,7 +49,7 @@ namespace PostDietProgress.Functions
             var healthData = await _healthPlanetLogic.GetHealthDataAsync(period);
 
             //身体データをDBに格納
-            await _cosmosDbLogic.SetHealthPlanetHealthDataAsync(healthData.healthDataList);
+            await _cosmosDbLogic.SetHealthPlanetHealthDataAsync(healthData);
 
             return new OkObjectResult("");
 

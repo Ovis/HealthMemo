@@ -61,6 +61,39 @@ namespace PostDietProgress.Domain
         }
 
         /// <summary>
+        /// リフレッシュトークン処理
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        public async Task<bool> GetHealthPlanetRefreshTokenAsync()
+        {
+            var token = await _cosmosDbLogic.GetSettingDataAsync();
+
+            //TANITA HealthPlanet処理のためリダイレクト
+            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                {"client_id",_healthPlanetConfiguration.TanitaClientId},
+                {"client_secret",_healthPlanetConfiguration.TanitaClientSecretToken},
+                {"redirect_uri","https://www.healthplanet.jp/success.html"},
+                {"refresh_token",token.RefreshToken},
+                {"grant_type","refresh_token"}
+            });
+
+            var res = await _httpClient.PostAsync("https://www.healthplanet.jp/oauth/token", content);
+
+            await using var stream = (await res.Content.ReadAsStreamAsync());
+
+            using var reader = (new StreamReader(stream, Encoding.GetEncoding("shift-jis"), true)) as TextReader;
+            var jsonString = await reader.ReadToEndAsync();
+
+            var tokenData = JsonSerializer.Deserialize<Token>(jsonString);
+
+            var result = await _cosmosDbLogic.SetHealthPlanetToken(tokenData);
+
+            return result;
+        }
+
+        /// <summary>
         /// HealthPlanetから身体情報を取得
         /// </summary>
         /// <returns></returns>

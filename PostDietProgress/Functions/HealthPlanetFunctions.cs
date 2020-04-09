@@ -34,7 +34,7 @@ namespace PostDietProgress.Functions
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
-            var period = 30;
+            var period = 7;
             if (!(string.IsNullOrEmpty(req.Query["period"])) && !int.TryParse(req.Query["period"], out period))
             {
                 return new BadRequestErrorMessageResult("期間指定の値が数値以外の値になっています。");
@@ -54,6 +54,15 @@ namespace PostDietProgress.Functions
             return new OkObjectResult("");
 
 
+        }
+
+        [FunctionName("GetRefreshToken")]
+        public async Task<IActionResult> GetRefreshToken(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            var healthData = await _healthPlanetLogic.GetHealthPlanetRefreshTokenAsync();
+            return new OkObjectResult("");
         }
     }
 }

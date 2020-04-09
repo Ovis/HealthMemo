@@ -30,10 +30,17 @@ namespace PostDietProgress.Application
                     configuration.GetSection("HealthPlanetOptions").Bind(settings);
                 });
 
+            builder.Services.AddOptions<WebHookConfiguration>()
+                .Configure<IConfiguration>((settings, configuration) =>
+                {
+                    configuration.GetSection("WebHookOptions").Bind(settings);
+                });
+
 
             builder.Services.AddScoped<InitializeCosmosDbLogic>();
             builder.Services.AddScoped<HealthPlanetLogic>();
             builder.Services.AddScoped<CosmosDbLogic>();
+            builder.Services.AddScoped<PostHealthDataLogic>();
 
             builder.Services.AddHttpClient();
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Options;
 using PostDietProgress.Entities.Configuration;
 using PostDietProgress.Entities.DbEntity;
@@ -117,9 +118,9 @@ namespace PostDietProgress.Domain
         {
             var healthData = new HealthRecord();
 
-            var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("Setting") };
+            var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("HealthData") };
 
-            var iterator = _settingContainer.GetItemQueryIterator<HealthRecord>("SELECT * FROM c WHERE c.type = 'HealthData' ORDER BY c.id desc OFFSET 0 LIMIT 1", requestOptions: queryRequestOptions);
+            var iterator = _healthContainer.GetItemQueryIterator<HealthRecord>("SELECT * FROM c WHERE c.type = 'HealthData' ORDER BY c.id desc OFFSET 0 LIMIT 1", requestOptions: queryRequestOptions);
 
             while (iterator.HasMoreResults)
             {
@@ -129,6 +130,32 @@ namespace PostDietProgress.Domain
             };
 
             return healthData;
+        }
+
+        /// <summary>
+        /// 指定された期間の身体データを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<HealthRecord>> GetHealthPlanetPostDataPeriodAsync(DateTime start, DateTime end)
+        {
+            var healthDataList = new List<HealthRecord>();
+
+            var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("HealthData") };
+
+            var iterator = _healthContainer.GetItemLinqQueryable<HealthRecord>(requestOptions: queryRequestOptions)
+                .Where(o => o.AssayDate > start)
+                .Where(w => w.AssayDate <= end)
+                .Where(n => n.Weight != null)
+                .ToFeedIterator();
+
+            while (iterator.HasMoreResults)
+            {
+                var result = await iterator.ReadNextAsync();
+
+                healthDataList.AddRange(result);
+            }
+
+            return healthDataList;
         }
 
         /// <summary>
@@ -164,7 +191,7 @@ namespace PostDietProgress.Domain
 
             try
             {
-                await _healthContainer.UpsertItemAsync(record);
+                await _settingContainer.UpsertItemAsync(record);
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
             {

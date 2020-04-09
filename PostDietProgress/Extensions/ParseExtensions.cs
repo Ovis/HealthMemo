@@ -49,5 +49,52 @@ namespace PostDietProgress.Extensions
 
             return null;
         }
+
+        /// <summary>
+        /// UTCな日時文字列をJSTな日時オブジェクトに変換
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public static DateTime? TryUtcDateTimeStringParseToJst(this string str, string format = "yyyyMMddHHmm")
+        {
+            var jstTimeZone = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
+
+            var parseResult = DateTime.TryParseExact(str,
+                format,
+                DateTimeFormatInfo.InvariantInfo,
+                DateTimeStyles.NoCurrentDateDefault, out var dateUtc);
+
+            if (!parseResult)
+            {
+                var dateJst = TimeZoneInfo.ConvertTimeFromUtc(dateUtc, jstTimeZone);
+
+                return dateJst;
+            }
+
+            return null;
+        }
+
+        public static DateTime? ConvertJstTimeFromUtc(this DateTime? utcDate)
+        {
+            var jstTimeZone = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
+
+            if (utcDate == null) return null;
+
+            var dateJst = TimeZoneInfo.ConvertTimeFromUtc((DateTime)utcDate, jstTimeZone);
+
+            return dateJst;
+
+        }
+
+        public static DateTime ConvertJstTimeFromUtc(this DateTime utcDate)
+        {
+            var jstTimeZone = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
+
+            var dateJst = TimeZoneInfo.ConvertTimeFromUtc((DateTime)utcDate, jstTimeZone);
+
+            return dateJst;
+
+        }
     }
 }

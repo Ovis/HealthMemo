@@ -139,7 +139,7 @@ namespace PostDietProgress.Functions
                 return new BadRequestErrorMessageResult("目標体重の値が数値ではありません。");
             }
 
-            if (!double.TryParse(req.Query["CurrentWeight"], out var originalWeight))
+            if (!double.TryParse(req.Query["OriginalWeight"], out var originalWeight))
             {
                 return new BadRequestErrorMessageResult("元体重の値が数値ではありません。");
             }

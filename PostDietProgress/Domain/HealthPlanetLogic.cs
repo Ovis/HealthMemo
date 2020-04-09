@@ -68,15 +68,15 @@ namespace PostDietProgress.Domain
         {
             var token = await _cosmosDbLogic.GetSettingDataAsync();
 
-            var jst = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
-            var localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jst);
+            var jstTimeZone = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
+            var jstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jstTimeZone);
 
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 {"access_token",token.AccessToken},
                 {"date","1"},
-                {"from",$"{localTime.AddDays(-period):yyyyMMdd}000000"},
-                {"to",$"{localTime:yyyyMMdd}235959"},
+                {"from",$"{jstTime.AddDays(-period):yyyyMMdd}000000"},
+                {"to",$"{jstTime:yyyyMMdd}235959"},
                 {"tag","6021,6022,6023,6024,6025,6026,6027,6028,6029"}
             });
 

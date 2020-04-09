@@ -7,7 +7,7 @@ namespace PostDietProgress.Entities.DbEntity
         public string Id { get; set; }
 
         //測定日
-        public DateTime AssayDate { get; set; }
+        public DateTime? AssayDate { get; set; }
 
         //身長
         public double? Height { get; set; }

@@ -1,4 +1,8 @@
-﻿namespace PostDietProgress.Extensions
+﻿using System;
+using System.Globalization;
+using TimeZoneConverter;
+
+namespace PostDietProgress.Extensions
 {
     public static class ParseExtensions
     {
@@ -17,6 +21,32 @@
             {
                 return result;
             }
+            return null;
+        }
+
+        /// <summary>
+        /// JSTな日時文字列をUTCな日時オブジェクトに変換
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="format"></param>
+        /// <returns></returns>
+        public static DateTime? TryJstDateTimeStringParseToUtc(this string str, string format = "yyyyMMddHHmm")
+        {
+            var jstCulture = new CultureInfo("ja-JP");
+            var jstTimeZone = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
+
+            var parseResult = DateTime.TryParseExact(str,
+                format,
+                jstCulture,
+                DateTimeStyles.NoCurrentDateDefault, out var dateJst);
+
+            if (!parseResult)
+            {
+                var dateUtc = TimeZoneInfo.ConvertTimeToUtc(dateJst, jstTimeZone);
+
+                return dateUtc;
+            }
+
             return null;
         }
     }

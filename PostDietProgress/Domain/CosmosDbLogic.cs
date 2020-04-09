@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -77,15 +76,10 @@ namespace PostDietProgress.Domain
         /// <param name="healthData"></param>
         public async Task SetHealthPlanetHealthDataAsync((string height, List<HealthData> healthDataList) healthData)
         {
-            var jstCulture = new CultureInfo("ja-JP");
-
             foreach (var health in healthData.healthDataList)
             {
                 //測定日時(UTC)
-                var assayDate = DateTime.ParseExact(health.DateTime,
-                    "yyyyMMddHHmm",
-                    jstCulture,
-                    DateTimeStyles.AssumeUniversal);
+                var assayDate = health.DateTime.TryJstDateTimeStringParseToUtc();
 
                 var record = new HealthRecord
                 {

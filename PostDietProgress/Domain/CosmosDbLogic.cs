@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Options;
 using PostDietProgress.Entities.Configuration;
 using PostDietProgress.Entities.DbEntity;
 using PostDietProgress.Entities.HealthPlanetEntity;
+using PostDietProgress.Extensions;
 
 namespace PostDietProgress.Domain
 {
@@ -72,24 +74,33 @@ namespace PostDietProgress.Domain
         /// <summary>
         /// HealthPlanetから取得した身体情報をDBに格納
         /// </summary>
-        /// <param name="healthList"></param>
+        /// <param name="healthData"></param>
         public async Task SetHealthPlanetHealthDataAsync((string height, List<HealthData> healthDataList) healthData)
         {
+            var jstCulture = new CultureInfo("ja-JP");
+
             foreach (var health in healthData.healthDataList)
             {
+                //測定日時(UTC)
+                var assayDate = DateTime.ParseExact(health.DateTime,
+                    "yyyyMMddHHmm",
+                    jstCulture,
+                    DateTimeStyles.AssumeUniversal);
+
                 var record = new HealthRecord
                 {
                     Id = health.DateTime,
-                    BasalMetabolism = health.BasalMetabolism,
+                    AssayDate = assayDate,
+                    BasalMetabolism = health.BasalMetabolism.ToDoubleOrNull(),
                     BodyAge = health.BodyAge,
-                    BodyFatPerf = health.BodyFatPerf,
-                    BoneQuantity = health.BoneQuantity,
-                    MuscleMass = health.MuscleMass,
+                    BodyFatPerf = health.BodyFatPerf.ToDoubleOrNull(),
+                    BoneQuantity = health.BoneQuantity.ToDoubleOrNull(),
+                    MuscleMass = health.MuscleMass.ToDoubleOrNull(),
                     MuscleScore = health.MuscleScore,
-                    VisceralFatLevel = health.VisceralFatLevel,
-                    VisceralFatLevel2 = health.VisceralFatLevel2,
-                    Height = healthData.height,
-                    Weight = health.Weight,
+                    VisceralFatLevel = health.VisceralFatLevel.ToLongOrNull(),
+                    VisceralFatLevel2 = health.VisceralFatLevel2.ToDoubleOrNull(),
+                    Height = healthData.height.ToDoubleOrNull(),
+                    Weight = health.Weight.ToDoubleOrNull(),
                     Type = "HealthData"
                 };
 

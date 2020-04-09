@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -140,6 +140,47 @@ namespace PostDietProgress.Domain
             try
             {
                 return await _settingContainer.ReadItemAsync<Goal>("Goal", new PartitionKey("Setting"));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 前回身体データに今回の身体データをセット
+        /// </summary>
+        /// <returns></returns>
+        public async Task SetPreviousHealthDataAsync(double previousWeight, double previousWeekWeight, DateTime previousMeasurementDate)
+        {
+            var record = new Previous
+            {
+                Id = "Previous",
+                PreviousWeight = previousWeight,
+                PreviousMeasurementDate = previousMeasurementDate,
+                PreviousWeekWeight = previousWeekWeight,
+                PartitionKey = "Setting"
+            };
+
+            try
+            {
+                await _healthContainer.UpsertItemAsync(record);
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                Console.WriteLine("Item in database with id: {0} already exists\n", record.Id);
+            }
+        }
+
+        /// <summary>
+        /// 前回の身体データを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Previous> GetPreviousHealthDataAsync()
+        {
+            try
+            {
+                return await _settingContainer.ReadItemAsync<Previous>("Previous", new PartitionKey("Setting"));
             }
             catch
             {

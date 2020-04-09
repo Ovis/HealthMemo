@@ -136,5 +136,21 @@ namespace PostDietProgress.Domain
 
             return healthData;
         }
+
+        /// <summary>
+        /// 最新の身体データを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Goal> GetGoalAsync()
+        {
+            try
+            {
+                return await _settingContainer.ReadItemAsync<Goal>("Goal", new PartitionKey("Setting"));
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

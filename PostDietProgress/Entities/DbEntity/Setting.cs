@@ -11,12 +11,6 @@ namespace PostDietProgress.Entities.DbEntity
 
         public DateTime PreviousMeasurementDate { get; set; }
 
-        public string AccessToken { get; set; }
-
-        public DateTime ExpiresIn { get; set; }
-
-        public string RefreshToken { get; set; }
-
         public bool ErrorFlag { get; set; }
 
         public DateTime PreviousErrorDateTime { get; set; }

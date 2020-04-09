@@ -42,7 +42,7 @@ namespace PostDietProgress.Domain
         /// <returns></returns>
         public async Task<bool> SetHealthPlanetToken(Token token)
         {
-            var setting = new Setting()
+            var setting = new HealthPlanetToken()
             {
                 AccessToken = token.AccessToken,
                 RefreshToken = token.RefreshToken,
@@ -66,9 +66,9 @@ namespace PostDietProgress.Domain
         /// 設定情報を取得
         /// </summary>
         /// <returns></returns>
-        public async Task<Setting> GetSettingDataAsync()
+        public async Task<HealthPlanetToken> GetSettingDataAsync()
         {
-            return await _settingContainer.ReadItemAsync<Setting>("Setting", new PartitionKey("Setting"));
+            return await _settingContainer.ReadItemAsync<HealthPlanetToken>("Token", new PartitionKey("Setting"));
         }
 
         /// <summary>

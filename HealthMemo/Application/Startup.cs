@@ -1,11 +1,11 @@
 ﻿using System.Text;
+using HealthMemo.Domain;
+using HealthMemo.Entities.Configuration;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Fluent;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using HealthMemo.Domain;
-using HealthMemo.Entities.Configuration;
 
 [assembly: FunctionsStartup(typeof(HealthMemo.Application.Startup))]
 namespace HealthMemo.Application
@@ -41,6 +41,7 @@ namespace HealthMemo.Application
             builder.Services.AddScoped<HealthPlanetLogic>();
             builder.Services.AddScoped<CosmosDbLogic>();
             builder.Services.AddScoped<PostHealthDataLogic>();
+            builder.Services.AddScoped<GoogleFitLogic>();
 
             builder.Services.AddHttpClient();
 

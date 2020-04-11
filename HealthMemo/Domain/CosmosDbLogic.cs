@@ -244,7 +244,7 @@ namespace HealthMemo.Domain
             {
                 AccessToken = token.AccessToken,
                 RefreshToken = token.RefreshToken,
-                ExpiresIn = DateTime.Now.AddDays(30)
+                ExpiresIn = DateTime.Now.AddHours(1)
             };
 
             try

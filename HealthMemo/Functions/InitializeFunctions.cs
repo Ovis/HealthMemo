@@ -202,5 +202,23 @@ namespace HealthMemo.Functions
             return new RedirectResult(authUrl.ToString());
         }
 
+        /// <summary>
+        /// GoogleFit連携処理
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("GoogleAuthRedirect")]
+        public IActionResult GoogleAuthRedirect(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            var code = req.Query["code"];
+
+            _googleFitLogic.GetGoogleOAuth(code);
+
+            return new OkObjectResult("");
+        }
+
     }
 }

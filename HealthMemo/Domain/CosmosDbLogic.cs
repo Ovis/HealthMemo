@@ -70,7 +70,7 @@ namespace HealthMemo.Domain
         {
             try
             {
-                return await _settingContainer.ReadItemAsync<HealthPlanetToken>("Token", new PartitionKey("Setting"));
+                return await _settingContainer.ReadItemAsync<HealthPlanetToken>("HealthPlanet", new PartitionKey("Token"));
             }
             catch
             {
@@ -226,6 +226,38 @@ namespace HealthMemo.Domain
             {
                 return null;
             }
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// GoogleトークンDB登録処理
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<bool> SetGoogleToken(Entities.GoogleEneity.Token token)
+        {
+            var setting = new GoogleToken()
+            {
+                AccessToken = token.AccessToken,
+                RefreshToken = token.RefreshToken,
+                ExpiresIn = DateTime.Now.AddDays(30)
+            };
+
+            try
+            {
+                await _settingContainer.UpsertItemAsync(setting);
+            }
+            catch (Exception e)
+            {
+                //TODO 
+                Console.Write(e.Message);
+                return false;
+            }
+            return true;
         }
     }
 }

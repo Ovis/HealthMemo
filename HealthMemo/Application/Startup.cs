@@ -36,6 +36,11 @@ namespace HealthMemo.Application
                     configuration.GetSection("WebHookOptions").Bind(settings);
                 });
 
+            builder.Services.AddOptions<GoogleConfiguration>()
+                .Configure<IConfiguration>((settings, configuration) =>
+                {
+                    configuration.GetSection("GoogleOptions").Bind(settings);
+                });
 
             builder.Services.AddScoped<InitializeCosmosDbLogic>();
             builder.Services.AddScoped<HealthPlanetLogic>();

@@ -15,6 +15,9 @@
     "CosmosDbOptions:HealthDataContainerPartitionKey": "/type",
     "HealthPlanetOptions:TanitaClientId": "",
     "HealthPlanetOptions:TanitaClientSecretToken": "",
-    "HealthPlanetOptions:CallbackInitializeTanitaUrl": "http://localhost/api/InitializeTanita"
+    "HealthPlanetOptions:CallbackInitializeTanitaUrl": "http://localhost/api/InitializeTanita",
+    "WebHookOptions:WebHookUrl": "",
+    "GoogleOptions:ClientId": "",
+    "GoogleOptions:ClientSecret": ""
   }
 }

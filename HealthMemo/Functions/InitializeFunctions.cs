@@ -112,7 +112,7 @@ namespace HealthMemo.Functions
 
             if (string.IsNullOrEmpty(code))
             {
-                return new BadRequestResult();
+                return new BadRequestErrorMessageResult("HealthPlanetからコードの取得に失敗しました。");
             }
 
             var result = await _healthPlanetLogic.GetHealthPlanetTokenAsync(code);
@@ -120,7 +120,7 @@ namespace HealthMemo.Functions
 
             log.LogInformation("初期処理が完了しました。");
 
-            return new OkObjectResult("");
+            return new OkObjectResult("初期処理が完了しました。");
         }
 
         /// <summary>

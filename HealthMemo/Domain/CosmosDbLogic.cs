@@ -68,16 +68,26 @@ namespace HealthMemo.Domain
         /// <returns></returns>
         public async Task<HealthPlanetToken> GetSettingDataAsync()
         {
-            return await _settingContainer.ReadItemAsync<HealthPlanetToken>("Token", new PartitionKey("Setting"));
+            try
+            {
+                return await _settingContainer.ReadItemAsync<HealthPlanetToken>("Token", new PartitionKey("Setting"));
+            }
+            catch
+            {
+                Console.WriteLine("トークン取得に失敗");
+                return null;
+            }
         }
 
         /// <summary>
         /// HealthPlanetから取得した身体情報をDBに格納
         /// </summary>
-        /// <param name="healthData"></param>
-        public async Task SetHealthPlanetHealthDataAsync((string height, List<HealthData> healthDataList) healthData)
+        /// <param name="height"></param>
+        /// <param name="healthDataList"></param>
+        /// <returns></returns>
+        public async Task SetHealthPlanetHealthDataAsync(string height, List<HealthData> healthDataList)
         {
-            foreach (var health in healthData.healthDataList)
+            foreach (var health in healthDataList)
             {
                 //測定日時(UTC)
                 var assayDate = health.DateTime.TryJstDateTimeStringParseToUtc();
@@ -94,7 +104,7 @@ namespace HealthMemo.Domain
                     MuscleScore = health.MuscleScore,
                     VisceralFatLevel = health.VisceralFatLevel.ToLongOrNull(),
                     VisceralFatLevel2 = health.VisceralFatLevel2.ToDoubleOrNull(),
-                    Height = healthData.height.ToDoubleOrNull(),
+                    Height = height.ToDoubleOrNull(),
                     Weight = health.Weight.ToDoubleOrNull(),
                     Type = "HealthData"
                 };

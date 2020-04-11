@@ -6,9 +6,9 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using HealthMemo.Entities.Configuration;
 using HealthMemo.Entities.HealthPlanetEntity;
+using Microsoft.Extensions.Options;
 using TimeZoneConverter;
 
 namespace HealthMemo.Domain
@@ -97,9 +97,14 @@ namespace HealthMemo.Domain
         /// HealthPlanetから身体情報を取得
         /// </summary>
         /// <returns></returns>
-        public async Task<(string height, List<HealthData> healthDataList)> GetHealthDataAsync(int period)
+        public async Task<(bool isSuccess, string height, List<HealthData> healthDataList)> GetHealthDataAsync(int period)
         {
             var token = await _cosmosDbLogic.GetSettingDataAsync();
+
+            if (token == null)
+            {
+                return (false, null, null);
+            }
 
             var jstTimeZone = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
             var jstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jstTimeZone);
@@ -130,7 +135,7 @@ namespace HealthMemo.Domain
         /// </summary>
         /// <param name="healthData"></param>
         /// <returns></returns>
-        private (string height, List<HealthData> healthDataList) ShapeHealthData(InnerScan healthData)
+        private (bool isSuccess, string height, List<HealthData> healthDataList) ShapeHealthData(InnerScan healthData)
         {
             var healthPlanetDataList = new List<HealthData>();
 
@@ -147,7 +152,7 @@ namespace HealthMemo.Domain
                 healthPlanetDataList.Add(new HealthData(date, healthList));
             }
 
-            return (healthData.Height, healthPlanetDataList);
+            return (true, healthData.Height, healthPlanetDataList);
         }
     }
 }

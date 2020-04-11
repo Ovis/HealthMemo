@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using System.Web.Http;
+using HealthMemo.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using HealthMemo.Domain;
 
 namespace HealthMemo.Functions
 {
@@ -48,8 +48,13 @@ namespace HealthMemo.Functions
             //HealthPlanetからデータを取得
             var healthData = await _healthPlanetLogic.GetHealthDataAsync(period);
 
+            if (!healthData.isSuccess)
+            {
+                return new BadRequestErrorMessageResult("HealthPlanetからのデータ取得に失敗しました。");
+            }
+
             //身体データをDBに格納
-            await _cosmosDbLogic.SetHealthPlanetHealthDataAsync(healthData);
+            await _cosmosDbLogic.SetHealthPlanetHealthDataAsync(healthData.height, healthData.healthDataList);
 
             return new OkObjectResult("");
 
@@ -68,7 +73,8 @@ namespace HealthMemo.Functions
             ILogger log)
         {
             var healthData = await _healthPlanetLogic.GetHealthPlanetRefreshTokenAsync();
-            return new OkObjectResult("");
+
+            return new OkObjectResult("トークンの再取得が完了しました。");
         }
     }
 }

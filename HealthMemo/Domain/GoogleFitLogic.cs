@@ -28,16 +28,33 @@ namespace HealthMemo.Domain
             _httpClient = httpClient;
         }
 
-        public async Task<bool> GetGoogleOAuth(string code)
+        /// <summary>
+        ///  GoogleOAuthトークン取得処理
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="isRefresh"></param>
+        /// <returns></returns>
+        public async Task<(bool isSuccess, Token token)> GetGoogleOAuth(string code, bool isRefresh = false)
         {
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            var dic = new Dictionary<string, string>();
+
+            if (isRefresh)
             {
-                {"client_id",_googleConfiguration.ClientId},
-                {"client_secret",_googleConfiguration.ClientSecret},
-                {"redirect_uri",_googleConfiguration.CallbackInitializeUrl},
-                {"code",code},
-                {"grant_type","authorization_code"}
-            });
+                dic.Add("client_id", _googleConfiguration.ClientId);
+                dic.Add("client_secret", _googleConfiguration.ClientSecret);
+                dic.Add("refresh_token", code);
+                dic.Add("grant_type", "refresh_token");
+            }
+            else
+            {
+                dic.Add("client_id", _googleConfiguration.ClientId);
+                dic.Add("client_secret", _googleConfiguration.ClientSecret);
+                dic.Add("redirect_uri", _googleConfiguration.CallbackInitializeUrl);
+                dic.Add("code", code);
+                dic.Add("grant_type", "authorization_code");
+            }
+
+            var content = new FormUrlEncodedContent(dic);
 
             var res = await _httpClient.PostAsync("https://accounts.google.com/o/oauth2/token", content);
 
@@ -50,7 +67,7 @@ namespace HealthMemo.Domain
 
             var result = await _cosmosDbLogic.SetGoogleToken(tokenData);
 
-            return result;
+            return (result, tokenData);
         }
     }
 }

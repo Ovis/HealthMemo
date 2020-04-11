@@ -209,15 +209,15 @@ namespace HealthMemo.Functions
         /// <param name="log"></param>
         /// <returns></returns>
         [FunctionName("GoogleAuthRedirect")]
-        public IActionResult GoogleAuthRedirect(
+        public async Task<IActionResult> GoogleAuthRedirect(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
             var code = req.Query["code"];
 
-            _googleFitLogic.GetGoogleOAuth(code);
+            await _googleFitLogic.GetGoogleOAuth(code);
 
-            return new OkObjectResult("");
+            return new OkObjectResult("Googleとの連携処理を完了しました。");
         }
 
     }

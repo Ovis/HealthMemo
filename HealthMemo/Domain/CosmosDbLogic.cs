@@ -259,5 +259,22 @@ namespace HealthMemo.Domain
             }
             return true;
         }
+
+        /// <summary>
+        /// Googleトークンを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GoogleToken> GetGoogleTokenAsync()
+        {
+            try
+            {
+                return await _settingContainer.ReadItemAsync<GoogleToken>("Google", new PartitionKey("Token"));
+            }
+            catch
+            {
+                Console.WriteLine("トークン取得に失敗");
+                return null;
+            }
+        }
     }
 }

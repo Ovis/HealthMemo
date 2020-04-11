@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -68,6 +69,50 @@ namespace HealthMemo.Domain
             var result = await _cosmosDbLogic.SetGoogleToken(tokenData);
 
             return (result, tokenData);
+        }
+
+
+        public async Task<bool> SetGoogleFit()
+        {
+            var token = await GetToken();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Googleのアクセストークンを取得(失効時は再取得)
+        /// </summary>
+        /// <returns></returns>
+        private async Task<string> GetToken()
+        {
+            var tokenData = await _cosmosDbLogic.GetGoogleTokenAsync();
+            var token = "";
+
+            if (tokenData == null)
+            {
+                return token;
+            }
+
+            if (tokenData.ExpiresIn < DateTime.Now)
+            {
+                var refresh = await GetGoogleOAuth(tokenData.RefreshToken);
+
+                if (refresh.isSuccess)
+                {
+                    token = refresh.token.AccessToken;
+                }
+            }
+            else
+            {
+                token = tokenData.AccessToken;
+            }
+
+            return token;
         }
     }
 }

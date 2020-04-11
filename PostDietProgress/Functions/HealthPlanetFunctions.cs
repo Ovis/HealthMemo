@@ -56,8 +56,14 @@ namespace PostDietProgress.Functions
 
         }
 
-        [FunctionName("GetRefreshToken")]
-        public async Task<IActionResult> GetRefreshToken(
+        /// <summary>
+        /// リフレッシュトークンによるアクセストークン再取得処理
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("RefreshAccessToken")]
+        public async Task<IActionResult> RefreshAccessToken(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
             ILogger log)
         {

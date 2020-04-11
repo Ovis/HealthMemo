@@ -1,0 +1,20 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "CosmosDbOptions:AccountEndpoint": "https://localhost:8081/",
+    "CosmosDbOptions:AccountKey": "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==",
+    "CosmosDbOptions:DatabaseId": "HealthMemo",
+    "CosmosDbOptions:DatabaseThroughput": "400",
+    "CosmosDbOptions:ContainerThroughput": "400",
+    "CosmosDbOptions:SettingPartitionKey": "/partitionKey",
+    "CosmosDbOptions:SettingContainerId": "Setting",
+    "CosmosDbOptions:HealthDataContainerId": "HealthData",
+    "CosmosDbOptions:HealthDataTimeToLive": 31536000,
+    "CosmosDbOptions:HealthDataContainerPartitionKey": "/type",
+    "HealthPlanetOptions:TanitaClientId": "",
+    "HealthPlanetOptions:TanitaClientSecretToken": "",
+    "HealthPlanetOptions:CallbackInitializeTanitaUrl": "http://localhost/api/InitializeTanita"
+  }
+}

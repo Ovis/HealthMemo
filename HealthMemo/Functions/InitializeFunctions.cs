@@ -1,14 +1,14 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
+using HealthMemo.Domain;
+using HealthMemo.Entities.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using HealthMemo.Domain;
-using HealthMemo.Entities.Configuration;
 
 namespace HealthMemo.Functions
 {
@@ -105,7 +105,7 @@ namespace HealthMemo.Functions
         /// <returns></returns>
         [FunctionName("InitializeTanita")]
         public async Task<IActionResult> InitializeTanita(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             var code = req.Query["code"];

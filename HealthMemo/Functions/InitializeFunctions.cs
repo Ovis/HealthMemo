@@ -18,6 +18,7 @@ namespace HealthMemo.Functions
         private readonly HealthPlanetConfiguration _healthPlanetConfiguration;
         private readonly InitializeCosmosDbLogic _initializeCosmosDbLogic;
         private readonly HealthPlanetLogic _healthPlanetLogic;
+        private readonly GoogleFitLogic _googleFitLogic;
 
 
 
@@ -28,17 +29,20 @@ namespace HealthMemo.Functions
         /// <param name="healthPlanetConfiguration"></param>
         /// <param name="initializeCosmosDbLogic"></param>
         /// <param name="healthPlanetLogic"></param>
+        /// <param name="googleFitLogic"></param>
         public InitializeFunctions(
             IOptions<CosmosDbConfiguration> cosmosDbConfiguration,
             IOptions<HealthPlanetConfiguration> healthPlanetConfiguration,
             InitializeCosmosDbLogic initializeCosmosDbLogic,
-            HealthPlanetLogic healthPlanetLogic
+            HealthPlanetLogic healthPlanetLogic,
+            GoogleFitLogic googleFitLogic
             )
         {
             _cosmosDbConfiguration = cosmosDbConfiguration.Value;
             _healthPlanetConfiguration = healthPlanetConfiguration.Value;
             _initializeCosmosDbLogic = initializeCosmosDbLogic;
             _healthPlanetLogic = healthPlanetLogic;
+            _googleFitLogic = googleFitLogic;
         }
 
         /// <summary>
@@ -162,7 +166,21 @@ namespace HealthMemo.Functions
                 : new BadRequestErrorMessageResult("目標・元体重の設定に失敗しました。");
         }
 
+        /// <summary>
+        /// GoogleFit連携処理
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("InitializeGoogleFitAuth")]
+        public async Task<IActionResult> InitializeGoogleFitAuth(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+            ILogger log)
+        {
 
+
+            return new OkObjectResult("");
+        }
 
     }
 }

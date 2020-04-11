@@ -1,6 +1,9 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
+using Google.Apis.Fitness.v1;
 using HealthMemo.Domain;
 using HealthMemo.Entities.Configuration;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +19,8 @@ namespace HealthMemo.Functions
     {
         private readonly CosmosDbConfiguration _cosmosDbConfiguration;
         private readonly HealthPlanetConfiguration _healthPlanetConfiguration;
+        private readonly GoogleConfiguration _googleConfiguration;
+
         private readonly InitializeCosmosDbLogic _initializeCosmosDbLogic;
         private readonly HealthPlanetLogic _healthPlanetLogic;
         private readonly GoogleFitLogic _googleFitLogic;
@@ -27,12 +32,14 @@ namespace HealthMemo.Functions
         /// </summary>
         /// <param name="cosmosDbConfiguration"></param>
         /// <param name="healthPlanetConfiguration"></param>
+        /// <param name="googleConfiguration"></param>
         /// <param name="initializeCosmosDbLogic"></param>
         /// <param name="healthPlanetLogic"></param>
         /// <param name="googleFitLogic"></param>
         public InitializeFunctions(
             IOptions<CosmosDbConfiguration> cosmosDbConfiguration,
             IOptions<HealthPlanetConfiguration> healthPlanetConfiguration,
+            IOptions<GoogleConfiguration> googleConfiguration,
             InitializeCosmosDbLogic initializeCosmosDbLogic,
             HealthPlanetLogic healthPlanetLogic,
             GoogleFitLogic googleFitLogic
@@ -40,6 +47,8 @@ namespace HealthMemo.Functions
         {
             _cosmosDbConfiguration = cosmosDbConfiguration.Value;
             _healthPlanetConfiguration = healthPlanetConfiguration.Value;
+            _googleConfiguration = googleConfiguration.Value;
+
             _initializeCosmosDbLogic = initializeCosmosDbLogic;
             _healthPlanetLogic = healthPlanetLogic;
             _googleFitLogic = googleFitLogic;
@@ -172,14 +181,25 @@ namespace HealthMemo.Functions
         /// <param name="req"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        [FunctionName("InitializeGoogleFitAuth")]
-        public async Task<IActionResult> InitializeGoogleFitAuth(
+        [FunctionName("InitializeGoogleAuth")]
+        public IActionResult InitializeGoogleAuth(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
+            var query = HttpUtility.ParseQueryString("");
 
+            query.Add("client_id", _googleConfiguration.ClientId);
+            query.Add("redirect_uri", _googleConfiguration.CallbackInitializeUrl);
+            query.Add("response_type", "code");
+            query.Add("scope", $"{FitnessService.Scope.FitnessBodyRead} {FitnessService.Scope.FitnessBodyWrite}");
+            query.Add("access_type", "offline");
 
-            return new OkObjectResult("");
+            var authUrl = new UriBuilder("https://accounts.google.com/o/oauth2/auth")
+            {
+                Query = query.ToString()
+            };
+
+            return new RedirectResult(authUrl.ToString());
         }
 
     }

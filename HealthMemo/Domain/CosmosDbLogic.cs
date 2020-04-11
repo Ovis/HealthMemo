@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Linq;
-using Microsoft.Extensions.Options;
 using HealthMemo.Entities.Configuration;
 using HealthMemo.Entities.DbEntity;
 using HealthMemo.Entities.HealthPlanetEntity;
 using HealthMemo.Extensions;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
+using Microsoft.Extensions.Options;
 
 namespace HealthMemo.Domain
 {
@@ -116,7 +116,7 @@ namespace HealthMemo.Domain
         /// <returns></returns>
         public async Task<HealthRecord> GetHealthPlanetPostDataAsync()
         {
-            var healthData = new HealthRecord();
+            HealthRecord healthData = null;
 
             var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("HealthData") };
 
@@ -126,7 +126,10 @@ namespace HealthMemo.Domain
             {
                 var result = await iterator.ReadNextAsync();
 
-                healthData = result.First();
+                if (result.Count != 0)
+                {
+                    healthData = result.First();
+                }
             };
 
             return healthData;

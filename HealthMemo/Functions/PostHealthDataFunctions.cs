@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using System.Web.Http;
+using HealthMemo.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using HealthMemo.Domain;
 
 namespace HealthMemo.Functions
 {

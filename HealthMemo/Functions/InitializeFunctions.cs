@@ -134,18 +134,31 @@ namespace HealthMemo.Functions
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
-            if (!double.TryParse(req.Query["GoalWeight"], out var goalWeight))
+            var goalWeightQuery = req.Query["GoalWeight"];
+            var originalWeightQuery = req.Query["OriginalWeight"];
+
+            if (string.IsNullOrEmpty(goalWeightQuery))
+            {
+                return new BadRequestErrorMessageResult("目標体重が未入力です。");
+            }
+
+            if (string.IsNullOrEmpty(originalWeightQuery))
+            {
+                return new BadRequestErrorMessageResult("元体重が未入力です。");
+            }
+
+            if (!double.TryParse(goalWeightQuery, out var goalWeight))
             {
                 return new BadRequestErrorMessageResult("目標体重の値が数値ではありません。");
             }
 
-            if (!double.TryParse(req.Query["OriginalWeight"], out var originalWeight))
+            if (!double.TryParse(originalWeightQuery, out var originalWeight))
             {
                 return new BadRequestErrorMessageResult("元体重の値が数値ではありません。");
             }
 
             return await _initializeCosmosDbLogic.SetGoalAsync(goalWeight, originalWeight)
-                ? (IActionResult)new OkResult()
+                ? (IActionResult)new OkObjectResult("元体重・目標体重の設定が完了しました。")
                 : new BadRequestErrorMessageResult("目標・元体重の設定に失敗しました。");
         }
 

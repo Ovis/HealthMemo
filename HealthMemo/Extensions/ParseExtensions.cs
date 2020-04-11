@@ -40,7 +40,7 @@ namespace HealthMemo.Extensions
                 jstCulture,
                 DateTimeStyles.NoCurrentDateDefault, out var dateJst);
 
-            if (!parseResult)
+            if (parseResult)
             {
                 var dateUtc = TimeZoneInfo.ConvertTimeToUtc(dateJst, jstTimeZone);
 
@@ -65,7 +65,7 @@ namespace HealthMemo.Extensions
                 DateTimeFormatInfo.InvariantInfo,
                 DateTimeStyles.NoCurrentDateDefault, out var dateUtc);
 
-            if (!parseResult)
+            if (parseResult)
             {
                 var dateJst = TimeZoneInfo.ConvertTimeFromUtc(dateUtc, jstTimeZone);
 

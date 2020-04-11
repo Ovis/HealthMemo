@@ -61,22 +61,55 @@ namespace PostDietProgress.Domain
         }
 
         /// <summary>
-        /// HealthPlanetから身体情報を取得
+        /// リフレッシュトークン処理
         /// </summary>
+        /// <param name="code"></param>
         /// <returns></returns>
-        public async Task<InnerScan> GetHealthDataAsync(int period)
+        public async Task<bool> GetHealthPlanetRefreshTokenAsync()
         {
             var token = await _cosmosDbLogic.GetSettingDataAsync();
 
-            var jst = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
-            var localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jst);
+            //TANITA HealthPlanet処理のためリダイレクト
+            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                {"client_id",_healthPlanetConfiguration.TanitaClientId},
+                {"client_secret",_healthPlanetConfiguration.TanitaClientSecretToken},
+                {"redirect_uri","https://www.healthplanet.jp/success.html"},
+                {"refresh_token",token.RefreshToken},
+                {"grant_type","refresh_token"}
+            });
+
+            var res = await _httpClient.PostAsync("https://www.healthplanet.jp/oauth/token", content);
+
+            await using var stream = (await res.Content.ReadAsStreamAsync());
+
+            using var reader = (new StreamReader(stream, Encoding.GetEncoding("shift-jis"), true)) as TextReader;
+            var jsonString = await reader.ReadToEndAsync();
+
+            var tokenData = JsonSerializer.Deserialize<Token>(jsonString);
+
+            var result = await _cosmosDbLogic.SetHealthPlanetToken(tokenData);
+
+            return result;
+        }
+
+        /// <summary>
+        /// HealthPlanetから身体情報を取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<(string height, List<HealthData> healthDataList)> GetHealthDataAsync(int period)
+        {
+            var token = await _cosmosDbLogic.GetSettingDataAsync();
+
+            var jstTimeZone = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
+            var jstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jstTimeZone);
 
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 {"access_token",token.AccessToken},
                 {"date","1"},
-                {"from",$"{localTime.AddDays(-period):yyyyMMdd}000000"},
-                {"to",$"{localTime:yyyyMMdd}235959"},
+                {"from",$"{jstTime.AddDays(-period):yyyyMMdd}000000"},
+                {"to",$"{jstTime:yyyyMMdd}235959"},
                 {"tag","6021,6022,6023,6024,6025,6026,6027,6028,6029"}
             });
 
@@ -89,7 +122,7 @@ namespace PostDietProgress.Domain
 
             var healthData = JsonSerializer.Deserialize<InnerScan>(healthDataJson);
 
-            return healthData;
+            return ShapeHealthData(healthData);
         }
 
         /// <summary>
@@ -97,9 +130,9 @@ namespace PostDietProgress.Domain
         /// </summary>
         /// <param name="healthData"></param>
         /// <returns></returns>
-        public List<HpHealthData> ShapeHealthData(InnerScan healthData)
+        private (string height, List<HealthData> healthDataList) ShapeHealthData(InnerScan healthData)
         {
-            var healthPlanetDataList = new List<HpHealthData>();
+            var healthPlanetDataList = new List<HealthData>();
 
             //取得データから日付を抜き出す
             var healthDateList = healthData.Data.Select(x => x.Date).Distinct().ToList();
@@ -111,10 +144,10 @@ namespace PostDietProgress.Domain
                     .Where(r => date.Equals(r.Date))
                     .ToDictionary(x => x.Tag, x => x.Keydata);
 
-                healthPlanetDataList.Add(new HpHealthData(date, healthList));
+                healthPlanetDataList.Add(new HealthData(date, healthList));
             }
 
-            return healthPlanetDataList;
+            return (healthData.Height, healthPlanetDataList);
         }
     }
 }

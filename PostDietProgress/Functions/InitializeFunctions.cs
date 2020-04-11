@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -23,7 +24,8 @@ namespace PostDietProgress.Functions
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="cosmosDbConfiguration"></param>
+        /// <param name="healthPlanetConfiguration"></param>
         /// <param name="initializeCosmosDbLogic"></param>
         /// <param name="healthPlanetLogic"></param>
         public InitializeFunctions(
@@ -94,6 +96,7 @@ namespace PostDietProgress.Functions
             return new RedirectResult(authUrl.ToString());
         }
 
+
         /// <summary>
         /// 初期処理
         /// </summary>
@@ -118,6 +121,32 @@ namespace PostDietProgress.Functions
             log.LogInformation("初期処理が完了しました。");
 
             return new OkObjectResult("");
+        }
+
+        /// <summary>
+        /// 元体重・目標体重設定
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("SetGoal")]
+        public async Task<IActionResult> SetGoal(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            if (!double.TryParse(req.Query["GoalWeight"], out var goalWeight))
+            {
+                return new BadRequestErrorMessageResult("目標体重の値が数値ではありません。");
+            }
+
+            if (!double.TryParse(req.Query["OriginalWeight"], out var originalWeight))
+            {
+                return new BadRequestErrorMessageResult("元体重の値が数値ではありません。");
+            }
+
+            return await _initializeCosmosDbLogic.SetGoalAsync(goalWeight, originalWeight)
+                ? (IActionResult)new OkResult()
+                : new BadRequestErrorMessageResult("目標・元体重の設定に失敗しました。");
         }
 
 

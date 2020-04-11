@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Options;
 using PostDietProgress.Entities.Configuration;
 using PostDietProgress.Entities.DbEntity;
 using PostDietProgress.Entities.HealthPlanetEntity;
+using PostDietProgress.Extensions;
 
 namespace PostDietProgress.Domain
 {
@@ -39,7 +42,7 @@ namespace PostDietProgress.Domain
         /// <returns></returns>
         public async Task<bool> SetHealthPlanetToken(Token token)
         {
-            var setting = new Setting()
+            var setting = new HealthPlanetToken()
             {
                 AccessToken = token.AccessToken,
                 RefreshToken = token.RefreshToken,
@@ -63,31 +66,36 @@ namespace PostDietProgress.Domain
         /// 設定情報を取得
         /// </summary>
         /// <returns></returns>
-        public async Task<Setting> GetSettingDataAsync()
+        public async Task<HealthPlanetToken> GetSettingDataAsync()
         {
-            return await _settingContainer.ReadItemAsync<Setting>("Setting", new PartitionKey("Setting"));
+            return await _settingContainer.ReadItemAsync<HealthPlanetToken>("Token", new PartitionKey("Setting"));
         }
 
         /// <summary>
         /// HealthPlanetから取得した身体情報をDBに格納
         /// </summary>
-        /// <param name="healthList"></param>
-        public async Task SetHealthPlanetHealthDataAsync(List<HpHealthData> healthList)
+        /// <param name="healthData"></param>
+        public async Task SetHealthPlanetHealthDataAsync((string height, List<HealthData> healthDataList) healthData)
         {
-            foreach (var health in healthList)
+            foreach (var health in healthData.healthDataList)
             {
-                var record = new HealthData
+                //測定日時(UTC)
+                var assayDate = health.DateTime.TryJstDateTimeStringParseToUtc();
+
+                var record = new HealthRecord
                 {
                     Id = health.DateTime,
-                    BasalMetabolism = health.BasalMetabolism,
+                    AssayDate = assayDate,
+                    BasalMetabolism = health.BasalMetabolism.ToDoubleOrNull(),
                     BodyAge = health.BodyAge,
-                    BodyFatPerf = health.BodyFatPerf,
-                    BoneQuantity = health.BoneQuantity,
-                    MuscleMass = health.MuscleMass,
+                    BodyFatPerf = health.BodyFatPerf.ToDoubleOrNull(),
+                    BoneQuantity = health.BoneQuantity.ToDoubleOrNull(),
+                    MuscleMass = health.MuscleMass.ToDoubleOrNull(),
                     MuscleScore = health.MuscleScore,
-                    VisceralFatLevel = health.VisceralFatLevel,
-                    VisceralFatLevel2 = health.VisceralFatLevel2,
-                    Weight = health.Weight,
+                    VisceralFatLevel = health.VisceralFatLevel.ToLongOrNull(),
+                    VisceralFatLevel2 = health.VisceralFatLevel2.ToDoubleOrNull(),
+                    Height = healthData.height.ToDoubleOrNull(),
+                    Weight = health.Weight.ToDoubleOrNull(),
                     Type = "HealthData"
                 };
 
@@ -102,5 +110,109 @@ namespace PostDietProgress.Domain
             }
         }
 
+        /// <summary>
+        /// 最新の身体データを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<HealthRecord> GetHealthPlanetPostDataAsync()
+        {
+            var healthData = new HealthRecord();
+
+            var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("HealthData") };
+
+            var iterator = _healthContainer.GetItemQueryIterator<HealthRecord>("SELECT * FROM c WHERE c.type = 'HealthData' ORDER BY c.id desc OFFSET 0 LIMIT 1", requestOptions: queryRequestOptions);
+
+            while (iterator.HasMoreResults)
+            {
+                var result = await iterator.ReadNextAsync();
+
+                healthData = result.First();
+            };
+
+            return healthData;
+        }
+
+        /// <summary>
+        /// 指定された期間の身体データを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<HealthRecord>> GetHealthPlanetPostDataPeriodAsync(DateTime start, DateTime end)
+        {
+            var healthDataList = new List<HealthRecord>();
+
+            var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("HealthData") };
+
+            var iterator = _healthContainer.GetItemLinqQueryable<HealthRecord>(requestOptions: queryRequestOptions)
+                .Where(o => o.AssayDate > start)
+                .Where(w => w.AssayDate <= end)
+                .Where(n => n.Weight != null)
+                .ToFeedIterator();
+
+            while (iterator.HasMoreResults)
+            {
+                var result = await iterator.ReadNextAsync();
+
+                healthDataList.AddRange(result);
+            }
+
+            return healthDataList;
+        }
+
+        /// <summary>
+        /// 最新の身体データを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Goal> GetGoalAsync()
+        {
+            try
+            {
+                return await _settingContainer.ReadItemAsync<Goal>("Goal", new PartitionKey("Setting"));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 前回身体データに今回の身体データをセット
+        /// </summary>
+        /// <returns></returns>
+        public async Task SetPreviousHealthDataAsync(double previousWeight, double previousWeekWeight, DateTime previousMeasurementDate)
+        {
+            var record = new Previous
+            {
+                Id = "Previous",
+                PreviousWeight = previousWeight,
+                PreviousMeasurementDate = previousMeasurementDate,
+                PreviousWeekWeight = previousWeekWeight,
+                PartitionKey = "Setting"
+            };
+
+            try
+            {
+                await _settingContainer.UpsertItemAsync(record);
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                Console.WriteLine("Item in database with id: {0} already exists\n", record.Id);
+            }
+        }
+
+        /// <summary>
+        /// 前回の身体データを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Previous> GetPreviousHealthDataAsync()
+        {
+            try
+            {
+                return await _settingContainer.ReadItemAsync<Previous>("Previous", new PartitionKey("Setting"));
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

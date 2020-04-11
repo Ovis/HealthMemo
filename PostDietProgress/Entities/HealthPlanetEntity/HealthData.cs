@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PostDietProgress.Entities.HealthPlanetEntity
 {
-    public class HpHealthData
+    public class HealthData
     {
 
         public string DateTime { get; set; }
@@ -36,9 +36,9 @@ namespace PostDietProgress.Entities.HealthPlanetEntity
         /* 推定骨量(kg) */
         public string BoneQuantity { get; set; }
 
-        public HpHealthData() { }
+        public HealthData() { }
 
-        public HpHealthData(string dateTime, Dictionary<string, string> dic)
+        public HealthData(string dateTime, Dictionary<string, string> dic)
         {
             DateTime = dateTime;
 

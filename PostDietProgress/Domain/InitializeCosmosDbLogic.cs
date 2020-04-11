@@ -1,10 +1,12 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 using PostDietProgress.Entities.Configuration;
+using PostDietProgress.Entities.DbEntity;
 
 namespace PostDietProgress.Domain
 {
@@ -127,6 +129,33 @@ namespace PostDietProgress.Domain
             var result = await _cosmosDatabase.CreateContainerIfNotExistsAsync(properties, throughput);
 
             return result.StatusCode == HttpStatusCode.Created;
+        }
+
+        /// <summary>
+        /// 現在体重、目標体重の設定
+        /// </summary>
+        /// <param name="goalWeight"></param>
+        /// <param name="originalWeight"></param>
+        /// <returns></returns>
+        public async Task<bool> SetGoalAsync(double goalWeight, double originalWeight)
+        {
+            var goal = new Goal()
+            {
+                OriginalWeight = originalWeight,
+                GoalWeight = goalWeight
+            };
+
+            try
+            {
+                await _cosmosDatabase.GetContainer(_settings.SettingContainerId).UpsertItemAsync(goal);
+            }
+            catch (Exception e)
+            {
+                //TODO 
+                Console.Write(e.Message);
+                return false;
+            }
+            return true;
         }
     }
 }

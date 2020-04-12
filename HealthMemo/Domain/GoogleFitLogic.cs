@@ -11,6 +11,7 @@ using HealthMemo.Entities.DbEntity;
 using HealthMemo.Entities.GoogleEntity;
 using HealthMemo.Extensions;
 using Microsoft.Extensions.Options;
+using TimeZoneConverter;
 
 namespace HealthMemo.Domain
 {
@@ -177,7 +178,10 @@ namespace HealthMemo.Domain
                 return token;
             }
 
-            if (tokenData.ExpiresIn < DateTime.Now)
+            var jstTimeZone = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
+            var jstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jstTimeZone);
+
+            if (tokenData.ExpiresIn < jstTime)
             {
                 var refresh = await GetGoogleOAuth(tokenData.RefreshToken, true);
 

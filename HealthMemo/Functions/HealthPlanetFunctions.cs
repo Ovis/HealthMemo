@@ -97,6 +97,18 @@ namespace HealthMemo.Functions
                 return new BadRequestErrorMessageResult("期間指定の値は0から120までの値を指定してください。");
             }
 
+            var postWebHook = true;
+            if (!(string.IsNullOrEmpty(req.Query["postwebhook"])) && !bool.TryParse(req.Query["postwebhook"], out postWebHook))
+            {
+                return new BadRequestErrorMessageResult("Webhook投稿の指定に誤りがあります。");
+            }
+
+            var postGoogleFit = true;
+            if (!(string.IsNullOrEmpty(req.Query["postgooglefit"])) && !bool.TryParse(req.Query["postgooglefit"], out postGoogleFit))
+            {
+                return new BadRequestErrorMessageResult("Webhook投稿の指定に誤りがあります。");
+            }
+
             //HealthPlanetからデータを取得
             var (isSuccess, height, healthDataList) = await _healthPlanetLogic.GetHealthDataAsync(period);
 
@@ -116,15 +128,23 @@ namespace HealthMemo.Functions
             //身体データをDBに格納
             await _cosmosDbLogic.SetHealthPlanetHealthDataAsync(healthRecordList);
 
-            var goal = await _cosmosDbLogic.GetGoalAsync();
+            //Webhook投稿処理
+            if (postWebHook)
+            {
+                var goal = await _cosmosDbLogic.GetGoalAsync();
 
-            //投稿処理
-            await _postHealthDataLogic.PostHealthDataAsync(
-                healthRecordList.OrderByDescending(o => o.AssayDate).First(),
-                goal);
+
+                await _postHealthDataLogic.PostHealthDataAsync(
+                    healthRecordList.OrderByDescending(o => o.AssayDate).First(),
+                    goal);
+
+            }
 
             //GoogleFitへ投稿
-            await _googleFitLogic.SetGoogleFit(healthRecordList);
+            if (postGoogleFit)
+            {
+                await _googleFitLogic.SetGoogleFit(healthRecordList);
+            }
 
             return new OkObjectResult("取得及び投稿完了");
 
@@ -142,7 +162,14 @@ namespace HealthMemo.Functions
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
-            var healthData = await _healthPlanetLogic.GetHealthPlanetRefreshTokenAsync();
+            var token = await _cosmosDbLogic.GetSettingDataAsync();
+
+            if (token == null)
+            {
+                return new BadRequestErrorMessageResult("トークンの取得に失敗しました。");
+            }
+
+            var healthData = await _healthPlanetLogic.GetHealthPlanetRefreshTokenAsync(token.RefreshToken);
 
             return new OkObjectResult("トークンの再取得が完了しました。");
         }

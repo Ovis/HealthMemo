@@ -26,11 +26,20 @@ namespace HealthMemo.Functions
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            var now = DateTime.Now;
-            var healthDataList = await _cosmosDbLogic.GetHealthPlanetPostDataPeriodAsync(now.AddDays(-7), now);
-            await _googleFitLogic.SetGoogleFit(healthDataList);
+            var now = DateTime.UtcNow;
 
-            return new OkObjectResult("GoogleFitに投稿を行いました。");
+            var isSuccess = false;
+
+            var healthDataList = await _cosmosDbLogic.GetHealthPlanetPostDataPeriodAsync(now.AddDays(-7), now);
+
+            if (healthDataList != null)
+            {
+                isSuccess = await _googleFitLogic.SetGoogleFit(healthDataList);
+            }
+
+            return isSuccess
+                ? (IActionResult)new OkObjectResult("GoogleFitに投稿を行いました。")
+                : new BadRequestObjectResult("投稿処理に失敗しました。");
         }
     }
 }

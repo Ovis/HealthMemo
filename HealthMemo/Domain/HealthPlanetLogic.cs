@@ -48,7 +48,7 @@ namespace HealthMemo.Domain
                 {"grant_type","authorization_code"}
             });
 
-            var res = await _httpClient.PostAsync("https://www.healthplanet.jp/oauth/refreshToken", content);
+            var res = await _httpClient.PostAsync("https://www.healthplanet.jp/oauth/token", content);
 
             await using var stream = (await res.Content.ReadAsStreamAsync());
 

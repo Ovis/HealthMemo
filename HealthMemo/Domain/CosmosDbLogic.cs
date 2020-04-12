@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -238,7 +238,7 @@ namespace HealthMemo.Domain
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<bool> SetGoogleToken(Entities.GoogleEneity.Token token)
+        public async Task<bool> SetGoogleToken(Entities.GoogleEntity.Token token)
         {
             var setting = new GoogleToken()
             {

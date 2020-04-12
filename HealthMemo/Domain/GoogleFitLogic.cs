@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,8 +11,6 @@ using HealthMemo.Entities.DbEntity;
 using HealthMemo.Entities.GoogleEntity;
 using HealthMemo.Extensions;
 using Microsoft.Extensions.Options;
-using DataSource = HealthMemo.Entities.GoogleEntity.DataSource;
-using Token = HealthMemo.Entities.GoogleEneity.Token;
 
 namespace HealthMemo.Domain
 {

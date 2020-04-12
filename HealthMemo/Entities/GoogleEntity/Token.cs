@@ -1,6 +1,6 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-namespace HealthMemo.Entities.GoogleEneity
+namespace HealthMemo.Entities.GoogleEntity
 {
     public class Token
     {

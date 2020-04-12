@@ -172,7 +172,7 @@ namespace HealthMemo.Domain
         }
 
         /// <summary>
-        /// 最新の身体データを取得
+        /// 元体重、目標体重を取得
         /// </summary>
         /// <returns></returns>
         public async Task<Goal> GetGoalAsync()

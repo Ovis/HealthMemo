@@ -190,6 +190,7 @@ namespace HealthMemo.Functions
             query.Add("client_id", _googleConfiguration.ClientId);
             query.Add("redirect_uri", _googleConfiguration.CallbackInitializeUrl);
             query.Add("response_type", "code");
+            query.Add("approval_prompt", "force");
             query.Add("scope", $"https://www.googleapis.com/auth/fitness.body.read https://www.googleapis.com/auth/fitness.body.write");
             query.Add("access_type", "offline");
 

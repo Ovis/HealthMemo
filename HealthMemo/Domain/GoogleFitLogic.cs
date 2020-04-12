@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -205,7 +205,7 @@ namespace HealthMemo.Domain
         {
             try
             {
-                var res = await _httpClient.GetAsync($"https://www.googleapis.com/fitness/v1/users/me/dataSources?access_token={token}");
+                var res = await _httpClient.GetAsync($"https://www.googleapis.com/fitness/v1/users/{UserId}/dataSources?access_token={token}");
 
                 await using var stream = (await res.Content.ReadAsStreamAsync());
 
@@ -233,7 +233,7 @@ namespace HealthMemo.Domain
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, "https://www.googleapis.com/fitness/v1/users/me/dataSources");
+                var request = new HttpRequestMessage(HttpMethod.Post, "https://www.googleapis.com/fitness/v1/users/{UserId}/dataSources");
                 request.Headers.Add("ContentType", "application/json");
                 request.Headers.Add("Authorization", $"Bearer {token}");
                 request.Content = new StringContent(JsonSerializer.Serialize(dataSource, _serializeOptions), Encoding.UTF8, "application/json");
@@ -257,7 +257,7 @@ namespace HealthMemo.Domain
         /// <returns></returns>
         private async Task<bool> PostWeightDataAsync(string token, Dataset dataSet)
         {
-            var patchRequest = new HttpRequestMessage(HttpMethod.Patch, $"https://www.googleapis.com/fitness/v1/users/me/dataSources/{dataSet.DataSourceId}/datasets/{dataSet.MinStartTimeNs}-{dataSet.MaxEndTimeNs}");
+            var patchRequest = new HttpRequestMessage(HttpMethod.Patch, $"https://www.googleapis.com/fitness/v1/users/{UserId}/dataSources/{dataSet.DataSourceId}/datasets/{dataSet.MinStartTimeNs}-{dataSet.MaxEndTimeNs}");
             patchRequest.Headers.Add("ContentType", "application/json");
             patchRequest.Headers.Add("Authorization", $"Bearer {token}");
             patchRequest.Content = new StringContent(JsonSerializer.Serialize(dataSet, _serializeOptions), Encoding.UTF8, "application/json");

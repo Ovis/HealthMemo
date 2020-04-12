@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -155,17 +155,24 @@ namespace HealthMemo.Domain
 
             var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("HealthData") };
 
-            var iterator = _healthContainer.GetItemLinqQueryable<HealthRecord>(requestOptions: queryRequestOptions)
-                .Where(o => o.AssayDate > start)
-                .Where(w => w.AssayDate <= end)
-                .Where(n => n.Weight != null)
-                .ToFeedIterator();
-
-            while (iterator.HasMoreResults)
+            try
             {
-                var result = await iterator.ReadNextAsync();
+                var iterator = _healthContainer.GetItemLinqQueryable<HealthRecord>(requestOptions: queryRequestOptions)
+                    .Where(o => o.AssayDate > start)
+                    .Where(w => w.AssayDate <= end)
+                    .Where(n => n.Weight != null)
+                    .ToFeedIterator();
 
-                healthDataList.AddRange(result);
+                while (iterator.HasMoreResults)
+                {
+                    var result = await iterator.ReadNextAsync();
+
+                    healthDataList.AddRange(result);
+                }
+            }
+            catch
+            {
+                return null;
             }
 
             return healthDataList;

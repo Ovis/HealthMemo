@@ -5,11 +5,11 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using HealthMemo.Entities.Configuration;
 using HealthMemo.Entities.DbEntity;
 using HealthMemo.Entities.PostEntity;
 using HealthMemo.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace HealthMemo.Domain
 {
@@ -104,7 +104,7 @@ namespace HealthMemo.Domain
             await _cosmosDbLogic.SetPreviousHealthDataAsync((double)record.Weight, weekWeightAverage, (DateTime)record.AssayDate);
 
 
-            return false;
+            return true;
         }
 
         /// <summary>

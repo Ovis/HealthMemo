@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using HealthMemo.Entities.Configuration;
 using HealthMemo.Entities.DbEntity;
 using HealthMemo.Entities.HealthPlanetEntity;
-using HealthMemo.Extensions;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Options;
@@ -15,9 +14,6 @@ namespace HealthMemo.Domain
 {
     public class CosmosDbLogic
     {
-        private readonly CosmosDbConfiguration _cosmosDbConfiguration;
-        private readonly CosmosClient _cosmosDbClient;
-        private readonly Database _cosmosDatabase;
         private readonly Container _settingContainer;
         private readonly Container _healthContainer;
 
@@ -26,13 +22,12 @@ namespace HealthMemo.Domain
             CosmosClient cosmosDbClient
             )
         {
-            _cosmosDbConfiguration = cosmosDbConfiguration.Value;
-            _cosmosDbClient = cosmosDbClient;
+            var cosmosDbConfig = cosmosDbConfiguration.Value;
 
-            _cosmosDatabase = _cosmosDbClient.GetDatabase(_cosmosDbConfiguration.DatabaseId);
+            var cosmosDatabase = cosmosDbClient.GetDatabase(cosmosDbConfig.DatabaseId);
 
-            _settingContainer = _cosmosDatabase.GetContainer(_cosmosDbConfiguration.SettingContainerId);
-            _healthContainer = _cosmosDatabase.GetContainer(_cosmosDbConfiguration.HealthDataContainerId);
+            _settingContainer = cosmosDatabase.GetContainer(cosmosDbConfig.SettingContainerId);
+            _healthContainer = cosmosDatabase.GetContainer(cosmosDbConfig.HealthDataContainerId);
         }
 
         /// <summary>
@@ -70,7 +65,7 @@ namespace HealthMemo.Domain
         {
             try
             {
-                return await _settingContainer.ReadItemAsync<HealthPlanetToken>("Token", new PartitionKey("Setting"));
+                return await _settingContainer.ReadItemAsync<HealthPlanetToken>("HealthPlanet", new PartitionKey("Token"));
             }
             catch
             {
@@ -82,33 +77,12 @@ namespace HealthMemo.Domain
         /// <summary>
         /// HealthPlanetから取得した身体情報をDBに格納
         /// </summary>
-        /// <param name="height"></param>
-        /// <param name="healthDataList"></param>
+        /// <param name="healthRecordList"></param>
         /// <returns></returns>
-        public async Task SetHealthPlanetHealthDataAsync(string height, List<HealthData> healthDataList)
+        public async Task SetHealthPlanetHealthDataAsync(List<HealthRecord> healthRecordList)
         {
-            foreach (var health in healthDataList)
+            foreach (var record in healthRecordList)
             {
-                //測定日時(UTC)
-                var assayDate = health.DateTime.TryJstDateTimeStringParseToUtc();
-
-                var record = new HealthRecord
-                {
-                    Id = health.DateTime,
-                    AssayDate = assayDate,
-                    BasalMetabolism = health.BasalMetabolism.ToDoubleOrNull(),
-                    BodyAge = health.BodyAge,
-                    BodyFatPerf = health.BodyFatPerf.ToDoubleOrNull(),
-                    BoneQuantity = health.BoneQuantity.ToDoubleOrNull(),
-                    MuscleMass = health.MuscleMass.ToDoubleOrNull(),
-                    MuscleScore = health.MuscleScore,
-                    VisceralFatLevel = health.VisceralFatLevel.ToLongOrNull(),
-                    VisceralFatLevel2 = health.VisceralFatLevel2.ToDoubleOrNull(),
-                    Height = height.ToDoubleOrNull(),
-                    Weight = health.Weight.ToDoubleOrNull(),
-                    Type = "HealthData"
-                };
-
                 try
                 {
                     await _healthContainer.UpsertItemAsync(record);
@@ -155,24 +129,31 @@ namespace HealthMemo.Domain
 
             var queryRequestOptions = new QueryRequestOptions { PartitionKey = new PartitionKey("HealthData") };
 
-            var iterator = _healthContainer.GetItemLinqQueryable<HealthRecord>(requestOptions: queryRequestOptions)
-                .Where(o => o.AssayDate > start)
-                .Where(w => w.AssayDate <= end)
-                .Where(n => n.Weight != null)
-                .ToFeedIterator();
-
-            while (iterator.HasMoreResults)
+            try
             {
-                var result = await iterator.ReadNextAsync();
+                var iterator = _healthContainer.GetItemLinqQueryable<HealthRecord>(requestOptions: queryRequestOptions)
+                    .Where(o => o.AssayDate > start)
+                    .Where(w => w.AssayDate <= end)
+                    .Where(n => n.Weight != null)
+                    .ToFeedIterator();
 
-                healthDataList.AddRange(result);
+                while (iterator.HasMoreResults)
+                {
+                    var result = await iterator.ReadNextAsync();
+
+                    healthDataList.AddRange(result);
+                }
+            }
+            catch
+            {
+                return null;
             }
 
             return healthDataList;
         }
 
         /// <summary>
-        /// 最新の身体データを取得
+        /// 元体重、目標体重を取得
         /// </summary>
         /// <returns></returns>
         public async Task<Goal> GetGoalAsync()
@@ -224,6 +205,55 @@ namespace HealthMemo.Domain
             }
             catch
             {
+                return null;
+            }
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// GoogleトークンDB登録処理
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async Task<bool> SetGoogleToken(Entities.GoogleEntity.Token token)
+        {
+            var setting = new GoogleToken()
+            {
+                AccessToken = token.AccessToken,
+                RefreshToken = token.RefreshToken,
+                ExpiresIn = DateTime.Now.AddHours(1)
+            };
+
+            try
+            {
+                await _settingContainer.UpsertItemAsync(setting);
+            }
+            catch (Exception e)
+            {
+                //TODO 
+                Console.Write(e.Message);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Googleトークンを取得
+        /// </summary>
+        /// <returns></returns>
+        public async Task<GoogleToken> GetGoogleTokenAsync()
+        {
+            try
+            {
+                return await _settingContainer.ReadItemAsync<GoogleToken>("Google", new PartitionKey("Token"));
+            }
+            catch
+            {
+                Console.WriteLine("トークン取得に失敗");
                 return null;
             }
         }

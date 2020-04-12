@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using HealthMemo.Domain;
 using HealthMemo.Entities.Configuration;
@@ -16,8 +18,11 @@ namespace HealthMemo.Functions
     {
         private readonly CosmosDbConfiguration _cosmosDbConfiguration;
         private readonly HealthPlanetConfiguration _healthPlanetConfiguration;
+        private readonly GoogleConfiguration _googleConfiguration;
+
         private readonly InitializeCosmosDbLogic _initializeCosmosDbLogic;
         private readonly HealthPlanetLogic _healthPlanetLogic;
+        private readonly GoogleFitLogic _googleFitLogic;
 
 
 
@@ -26,19 +31,26 @@ namespace HealthMemo.Functions
         /// </summary>
         /// <param name="cosmosDbConfiguration"></param>
         /// <param name="healthPlanetConfiguration"></param>
+        /// <param name="googleConfiguration"></param>
         /// <param name="initializeCosmosDbLogic"></param>
         /// <param name="healthPlanetLogic"></param>
+        /// <param name="googleFitLogic"></param>
         public InitializeFunctions(
             IOptions<CosmosDbConfiguration> cosmosDbConfiguration,
             IOptions<HealthPlanetConfiguration> healthPlanetConfiguration,
+            IOptions<GoogleConfiguration> googleConfiguration,
             InitializeCosmosDbLogic initializeCosmosDbLogic,
-            HealthPlanetLogic healthPlanetLogic
+            HealthPlanetLogic healthPlanetLogic,
+            GoogleFitLogic googleFitLogic
             )
         {
             _cosmosDbConfiguration = cosmosDbConfiguration.Value;
             _healthPlanetConfiguration = healthPlanetConfiguration.Value;
+            _googleConfiguration = googleConfiguration.Value;
+
             _initializeCosmosDbLogic = initializeCosmosDbLogic;
             _healthPlanetLogic = healthPlanetLogic;
+            _googleFitLogic = googleFitLogic;
         }
 
         /// <summary>
@@ -162,7 +174,50 @@ namespace HealthMemo.Functions
                 : new BadRequestErrorMessageResult("目標・元体重の設定に失敗しました。");
         }
 
+        /// <summary>
+        /// GoogleFit連携処理
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("InitializeGoogleAuth")]
+        public IActionResult InitializeGoogleAuth(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            var query = HttpUtility.ParseQueryString("");
 
+            query.Add("client_id", _googleConfiguration.ClientId);
+            query.Add("redirect_uri", _googleConfiguration.CallbackInitializeUrl);
+            query.Add("response_type", "code");
+            query.Add("scope", $"https://www.googleapis.com/auth/fitness.body.read https://www.googleapis.com/auth/fitness.body.write");
+            query.Add("access_type", "offline");
+
+            var authUrl = new UriBuilder("https://accounts.google.com/o/oauth2/auth")
+            {
+                Query = query.ToString()
+            };
+
+            return new RedirectResult(authUrl.ToString());
+        }
+
+        /// <summary>
+        /// GoogleFit連携処理
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("GoogleAuthRedirect")]
+        public async Task<IActionResult> GoogleAuthRedirect(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            var code = req.Query["code"];
+
+            await _googleFitLogic.GetGoogleOAuth(code);
+
+            return new OkObjectResult("Googleとの連携処理を完了しました。");
+        }
 
     }
 }

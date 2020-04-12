@@ -2,9 +2,9 @@
 
 namespace HealthMemo.Entities.DbEntity
 {
-    public class HealthPlanetToken
+    public class GoogleToken
     {
-        public string Id { get; set; } = "HealthPlanet";
+        public string Id { get; set; } = "Google";
         public string AccessToken { get; set; }
 
         public DateTime ExpiresIn { get; set; }

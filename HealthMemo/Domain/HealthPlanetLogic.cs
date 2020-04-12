@@ -7,7 +7,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using HealthMemo.Entities.Configuration;
+using HealthMemo.Entities.DbEntity;
 using HealthMemo.Entities.HealthPlanetEntity;
+using HealthMemo.Extensions;
 using Microsoft.Extensions.Options;
 using TimeZoneConverter;
 
@@ -123,11 +125,18 @@ namespace HealthMemo.Domain
             await using var stream = (await res.Content.ReadAsStreamAsync());
             using var reader = (new StreamReader(stream, Encoding.UTF8, true)) as TextReader;
 
-            var healthDataJson = await reader.ReadToEndAsync();
+            try
+            {
+                var healthDataJson = await reader.ReadToEndAsync();
 
-            var healthData = JsonSerializer.Deserialize<InnerScan>(healthDataJson);
+                var healthData = JsonSerializer.Deserialize<InnerScan>(healthDataJson);
 
-            return ShapeHealthData(healthData);
+                return ShapeHealthData(healthData);
+            }
+            catch
+            {
+                return (false, "", null);
+            }
         }
 
         /// <summary>
@@ -153,6 +162,43 @@ namespace HealthMemo.Domain
             }
 
             return (true, healthData.Height, healthPlanetDataList);
+        }
+
+        /// <summary>
+        /// DB格納用リストを生成
+        /// </summary>
+        /// <param name="healthDataList"></param>
+        /// <returns></returns>
+        public List<HealthRecord> ShapeHealthRecord(string height, List<HealthData> healthDataList)
+        {
+            var healthRecordList = new List<HealthRecord>();
+
+            foreach (var health in healthDataList)
+            {
+                //測定日時(UTC)
+                var assayDate = health.DateTime.TryJstDateTimeStringParseToUtc();
+
+                var record = new HealthRecord
+                {
+                    Id = health.DateTime,
+                    AssayDate = assayDate,
+                    BasalMetabolism = health.BasalMetabolism.ToDoubleOrNull(),
+                    BodyAge = health.BodyAge,
+                    BodyFatPerf = health.BodyFatPerf.ToDoubleOrNull(),
+                    BoneQuantity = health.BoneQuantity.ToDoubleOrNull(),
+                    MuscleMass = health.MuscleMass.ToDoubleOrNull(),
+                    MuscleScore = health.MuscleScore,
+                    VisceralFatLevel = health.VisceralFatLevel.ToLongOrNull(),
+                    VisceralFatLevel2 = health.VisceralFatLevel2.ToDoubleOrNull(),
+                    Height = height.ToDoubleOrNull(),
+                    Weight = health.Weight.ToDoubleOrNull(),
+                    Type = "HealthData"
+                };
+
+                healthRecordList.Add(record);
+            }
+
+            return healthRecordList;
         }
     }
 }

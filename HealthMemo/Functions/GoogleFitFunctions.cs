@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Web.Http;
 using HealthMemo.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,11 +27,17 @@ namespace HealthMemo.Functions
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
+            var period = 7;
+            if (!(string.IsNullOrEmpty(req.Query["period"])) && !int.TryParse(req.Query["period"], out period))
+            {
+                return new BadRequestErrorMessageResult("期間指定の値が数値以外の値になっています。");
+            }
+
             var now = DateTime.UtcNow;
 
             var isSuccess = false;
 
-            var healthDataList = await _cosmosDbLogic.GetHealthPlanetPostDataPeriodAsync(now.AddDays(-7), now);
+            var healthDataList = await _cosmosDbLogic.GetHealthPlanetPostDataPeriodAsync(now.AddDays(-period), now);
 
             if (healthDataList != null)
             {

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using HealthMemo.Entities.Configuration;
 using HealthMemo.Entities.DbEntity;
 using HealthMemo.Entities.HealthPlanetEntity;
-using HealthMemo.Extensions;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Options;
@@ -78,33 +77,12 @@ namespace HealthMemo.Domain
         /// <summary>
         /// HealthPlanetから取得した身体情報をDBに格納
         /// </summary>
-        /// <param name="height"></param>
-        /// <param name="healthDataList"></param>
+        /// <param name="healthRecordList"></param>
         /// <returns></returns>
-        public async Task SetHealthPlanetHealthDataAsync(string height, List<HealthData> healthDataList)
+        public async Task SetHealthPlanetHealthDataAsync(List<HealthRecord> healthRecordList)
         {
-            foreach (var health in healthDataList)
+            foreach (var record in healthRecordList)
             {
-                //測定日時(UTC)
-                var assayDate = health.DateTime.TryJstDateTimeStringParseToUtc();
-
-                var record = new HealthRecord
-                {
-                    Id = health.DateTime,
-                    AssayDate = assayDate,
-                    BasalMetabolism = health.BasalMetabolism.ToDoubleOrNull(),
-                    BodyAge = health.BodyAge,
-                    BodyFatPerf = health.BodyFatPerf.ToDoubleOrNull(),
-                    BoneQuantity = health.BoneQuantity.ToDoubleOrNull(),
-                    MuscleMass = health.MuscleMass.ToDoubleOrNull(),
-                    MuscleScore = health.MuscleScore,
-                    VisceralFatLevel = health.VisceralFatLevel.ToLongOrNull(),
-                    VisceralFatLevel2 = health.VisceralFatLevel2.ToDoubleOrNull(),
-                    Height = height.ToDoubleOrNull(),
-                    Weight = health.Weight.ToDoubleOrNull(),
-                    Type = "HealthData"
-                };
-
                 try
                 {
                     await _healthContainer.UpsertItemAsync(record);

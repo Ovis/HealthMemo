@@ -15,9 +15,6 @@ namespace HealthMemo.Domain
 {
     public class CosmosDbLogic
     {
-        private readonly CosmosDbConfiguration _cosmosDbConfiguration;
-        private readonly CosmosClient _cosmosDbClient;
-        private readonly Database _cosmosDatabase;
         private readonly Container _settingContainer;
         private readonly Container _healthContainer;
 
@@ -26,13 +23,12 @@ namespace HealthMemo.Domain
             CosmosClient cosmosDbClient
             )
         {
-            _cosmosDbConfiguration = cosmosDbConfiguration.Value;
-            _cosmosDbClient = cosmosDbClient;
+            var cosmosDbConfig = cosmosDbConfiguration.Value;
 
-            _cosmosDatabase = _cosmosDbClient.GetDatabase(_cosmosDbConfiguration.DatabaseId);
+            var cosmosDatabase = cosmosDbClient.GetDatabase(cosmosDbConfig.DatabaseId);
 
-            _settingContainer = _cosmosDatabase.GetContainer(_cosmosDbConfiguration.SettingContainerId);
-            _healthContainer = _cosmosDatabase.GetContainer(_cosmosDbConfiguration.HealthDataContainerId);
+            _settingContainer = cosmosDatabase.GetContainer(cosmosDbConfig.SettingContainerId);
+            _healthContainer = cosmosDatabase.GetContainer(cosmosDbConfig.HealthDataContainerId);
         }
 
         /// <summary>

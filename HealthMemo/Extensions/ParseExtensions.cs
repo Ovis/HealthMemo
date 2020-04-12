@@ -6,6 +6,9 @@ namespace HealthMemo.Extensions
 {
     public static class ParseExtensions
     {
+        private static readonly DateTime UnixEpochStart = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+
         public static double? ToDoubleOrNull(this string str)
         {
             if (double.TryParse(str, out var result))
@@ -96,5 +99,16 @@ namespace HealthMemo.Extensions
             return dateJst;
 
         }
+
+        /// <summary>
+        /// UNIX時間でのナノ秒値
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static long GetUnixEpochNanoseconds(DateTime dt)
+        {
+            return (dt.Ticks - UnixEpochStart.Ticks) * 100;
+        }
+
     }
 }

@@ -48,7 +48,7 @@ namespace HealthMemo.Domain
                 {"grant_type","authorization_code"}
             });
 
-            var res = await _httpClient.PostAsync("https://www.healthplanet.jp/oauth/token", content);
+            var res = await _httpClient.PostAsync("https://www.healthplanet.jp/oauth/refreshToken", content);
 
             await using var stream = (await res.Content.ReadAsStreamAsync());
 
@@ -65,34 +65,38 @@ namespace HealthMemo.Domain
         /// <summary>
         /// リフレッシュトークン処理
         /// </summary>
-        /// <param name="code"></param>
+        /// <param name="refreshToken"></param>
         /// <returns></returns>
-        public async Task<bool> GetHealthPlanetRefreshTokenAsync()
+        public async Task<(bool isSuccess, string accessToken)> GetHealthPlanetRefreshTokenAsync(string refreshToken)
         {
-            var token = await _cosmosDbLogic.GetSettingDataAsync();
-
             //TANITA HealthPlanet処理のためリダイレクト
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
                 {"client_id",_healthPlanetConfiguration.TanitaClientId},
                 {"client_secret",_healthPlanetConfiguration.TanitaClientSecretToken},
                 {"redirect_uri","https://www.healthplanet.jp/success.html"},
-                {"refresh_token",token.RefreshToken},
+                {"refresh_token",refreshToken},
                 {"grant_type","refresh_token"}
             });
 
-            var res = await _httpClient.PostAsync("https://www.healthplanet.jp/oauth/token", content);
+            try
+            {
+                var res = await _httpClient.PostAsync("https://www.healthplanet.jp/oauth/refreshToken", content);
 
-            await using var stream = (await res.Content.ReadAsStreamAsync());
+                await using var stream = (await res.Content.ReadAsStreamAsync());
 
-            using var reader = (new StreamReader(stream, Encoding.GetEncoding("shift-jis"), true)) as TextReader;
-            var jsonString = await reader.ReadToEndAsync();
+                using var reader = (new StreamReader(stream, Encoding.GetEncoding("shift-jis"), true)) as TextReader;
+                var jsonString = await reader.ReadToEndAsync();
 
-            var tokenData = JsonSerializer.Deserialize<Token>(jsonString);
+                var tokenData = JsonSerializer.Deserialize<Token>(jsonString);
 
-            var result = await _cosmosDbLogic.SetHealthPlanetToken(tokenData);
-
-            return result;
+                var result = await _cosmosDbLogic.SetHealthPlanetToken(tokenData);
+                return (true, tokenData.AccessToken);
+            }
+            catch
+            {
+                return (false, null);
+            }
         }
 
         /// <summary>
@@ -103,6 +107,8 @@ namespace HealthMemo.Domain
         {
             var token = await _cosmosDbLogic.GetSettingDataAsync();
 
+            string accessToken;
+
             if (token == null)
             {
                 return (false, null, null);
@@ -111,9 +117,27 @@ namespace HealthMemo.Domain
             var jstTimeZone = TZConvert.GetTimeZoneInfo("Tokyo Standard Time");
             var jstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, jstTimeZone);
 
+            if (token.ExpiresIn < jstTime)
+            {
+                var refresh = await GetHealthPlanetRefreshTokenAsync(token.RefreshToken);
+
+                if (refresh.isSuccess)
+                {
+                    accessToken = refresh.accessToken;
+                }
+                else
+                {
+                    return (false, null, null);
+                }
+            }
+            else
+            {
+                accessToken = token.AccessToken;
+            }
+
             var content = new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                {"access_token",token.AccessToken},
+                {"access_token",accessToken},
                 {"date","1"},
                 {"from",$"{jstTime.AddDays(-period):yyyyMMdd}000000"},
                 {"to",$"{jstTime:yyyyMMdd}235959"},

@@ -18,6 +18,7 @@
     "HealthPlanetOptions:CallbackInitializeTanitaUrl": "http://localhost/api/InitializeTanita",
     "WebHookOptions:WebHookUrl": "",
     "GoogleOptions:ClientId": "",
-    "GoogleOptions:ClientSecret": ""
+    "GoogleOptions:ClientSecret": "",
+    "GoogleOptions:CallbackInitializeUrl": "http://localhost:7071/api/GoogleAuthRedirect"
   }
 }

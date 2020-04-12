@@ -18,7 +18,7 @@ namespace HealthMemo.Entities.GoogleEntity
     {
         public string PackageName { get; set; }
         public string Version { get; set; } = "1";
-        public string Name { get; set; } = "TanitaHealthPlanet";
+        public string Name { get; set; } = "HealthMemo";
         public string DetailsUrl { get; set; }
     }
 
@@ -34,7 +34,7 @@ namespace HealthMemo.Entities.GoogleEntity
     public class DataSource
     {
         public string DataStreamId { get; set; }
-        public string DataStreamName { get; set; } = "HealthPlanetCooperation";
+        public string DataStreamName { get; set; } = "WeightMemo";
         public string Type { get; set; } = "derived";
         public DataType DataType { get; set; } = new DataType();
         public Application Application { get; set; } = new Application();

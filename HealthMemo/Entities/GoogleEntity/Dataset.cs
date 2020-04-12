@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Google.Apis.Fitness.v1.Data;
 
 namespace HealthMemo.Entities.GoogleEntity
 {
@@ -17,7 +16,6 @@ namespace HealthMemo.Entities.GoogleEntity
     {
         public double? FpVal { get; set; }
         public int? IntVal { get; set; }
-        public List<ValueMapValEntry> MapVal { get; set; }
         public string StringVal { get; set; }
         public object ETag { get; set; }
     }

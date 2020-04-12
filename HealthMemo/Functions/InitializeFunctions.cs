@@ -3,7 +3,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using Google.Apis.Fitness.v1;
 using HealthMemo.Domain;
 using HealthMemo.Entities.Configuration;
 using Microsoft.AspNetCore.Http;
@@ -191,7 +190,7 @@ namespace HealthMemo.Functions
             query.Add("client_id", _googleConfiguration.ClientId);
             query.Add("redirect_uri", _googleConfiguration.CallbackInitializeUrl);
             query.Add("response_type", "code");
-            query.Add("scope", $"{FitnessService.Scope.FitnessBodyRead} {FitnessService.Scope.FitnessBodyWrite}");
+            query.Add("scope", $"https://www.googleapis.com/auth/fitness.body.read https://www.googleapis.com/auth/fitness.body.write");
             query.Add("access_type", "offline");
 
             var authUrl = new UriBuilder("https://accounts.google.com/o/oauth2/auth")

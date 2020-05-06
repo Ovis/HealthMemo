@@ -66,35 +66,42 @@ namespace HealthMemo.Functions
         {
             log.LogInformation("初期処理を開始");
 
-            //データベース作成
+            try
             {
-                var databaseCreateResult = await _initializeCosmosDbLogic.CreateCosmosDbDatabaseIfNotExistsAsync();
+                //データベース作成
+                {
+                    var databaseCreateResult = await _initializeCosmosDbLogic.CreateCosmosDbDatabaseIfNotExistsAsync();
 
-                log.LogInformation(databaseCreateResult
-                    ? $"CosmosDBのデータベースを作成しました。 データベース名:`{_cosmosDbConfiguration.DatabaseId}`"
-                    : $"データベース名: `{_cosmosDbConfiguration.DatabaseId}` はすでに存在します。");
+                    log.LogInformation(databaseCreateResult
+                        ? $"CosmosDBのデータベースを作成しました。 データベース名:`{_cosmosDbConfiguration.DatabaseId}`"
+                        : $"データベース名: `{_cosmosDbConfiguration.DatabaseId}` はすでに存在します。");
+                }
+
+
+                //設定情報格納コンテナ作成
+                {
+
+                    var settingContainerCreateResult =
+                        await _initializeCosmosDbLogic.CreateSettingCosmosDbContainerIfNotExistsAsync();
+
+                    log.LogInformation(settingContainerCreateResult
+                        ? $"CosmosDBのコンテナを作成しました。 コンテナ名:`{_cosmosDbConfiguration.SettingContainerId}`"
+                        : $"データベース名: `{_cosmosDbConfiguration.SettingContainerId}` はすでに存在します。");
+                }
+
+                //身体情報格納コンテナ作成
+                {
+                    var bodyConditionContainerCreateResult =
+                        await _initializeCosmosDbLogic.CreateBodyConditionCosmosDbContainerIfNotExistsAsync();
+
+                    log.LogInformation(bodyConditionContainerCreateResult
+                        ? $"CosmosDBのコンテナを作成しました。 コンテナ名:`{_cosmosDbConfiguration.HealthDataContainerId}`"
+                        : $"データベース名: `{_cosmosDbConfiguration.HealthDataContainerId}` はすでに存在します。");
+                }
             }
-
-
-            //設定情報格納コンテナ作成
+            catch (Exception e)
             {
-
-                var settingContainerCreateResult =
-                    await _initializeCosmosDbLogic.CreateSettingCosmosDbContainerIfNotExistsAsync();
-
-                log.LogInformation(settingContainerCreateResult
-                    ? $"CosmosDBのコンテナを作成しました。 コンテナ名:`{_cosmosDbConfiguration.SettingContainerId}`"
-                    : $"データベース名: `{_cosmosDbConfiguration.SettingContainerId}` はすでに存在します。");
-            }
-
-            //身体情報格納コンテナ作成
-            {
-                var bodyConditionContainerCreateResult =
-                    await _initializeCosmosDbLogic.CreateBodyConditionCosmosDbContainerIfNotExistsAsync();
-
-                log.LogInformation(bodyConditionContainerCreateResult
-                    ? $"CosmosDBのコンテナを作成しました。 コンテナ名:`{_cosmosDbConfiguration.HealthDataContainerId}`"
-                    : $"データベース名: `{_cosmosDbConfiguration.HealthDataContainerId}` はすでに存在します。");
+                return new BadRequestErrorMessageResult($"データベース作成処理でエラーが発生しました。{e.Message}{Environment.NewLine}{e.StackTrace}");
             }
 
             //TANITA HealthPlanet処理のためリダイレクト
@@ -115,8 +122,8 @@ namespace HealthMemo.Functions
         /// <param name="req"></param>
         /// <param name="log"></param>
         /// <returns></returns>
-        [FunctionName("InitializeTanita")]
-        public async Task<IActionResult> InitializeTanita(
+        [FunctionName("TanitaAuthRedirect")]
+        public async Task<IActionResult> TanitaAuthRedirect(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {

@@ -68,7 +68,7 @@ namespace HealthMemo.Functions
             //身体データをDBに格納
             await _cosmosDbLogic.SetHealthPlanetHealthDataAsync(healthRecordList);
 
-            return new OkObjectResult("");
+            return new OkObjectResult("取得完了");
 
 
         }
